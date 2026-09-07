@@ -16,6 +16,4 @@ projet-finder/
 	├── front/
 	│   └── src/              
 	│
-	└── script/               
-
-
+	└── script/
