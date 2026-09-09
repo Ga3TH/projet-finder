@@ -29,9 +29,9 @@ const hotels = JSON.parse(
 app.get("/hotels", (req, res) => {
   res.json(hotels);
 });
-app.get("/chambres", (req, res) => {
+/*app.get("/chambres", (req, res) => {
   res.json(chambres);
-});
+});*/
 
 // Route pour récupérer un hôtel spécifique par son ID
 app.get("/hotels/:id", (req, res) => {
@@ -55,6 +55,21 @@ app.get("/chambres/:id", (req, res) => {
   }
 
   res.json(chambre);
+});
+
+//route filtrer suivant le prix
+app.get("/chambres", (req, res) => {
+  const { prix_max } = req.query;
+  if (isNaN(Number(prix_max))) {
+    return res
+      .status(400)
+      .json({ erreur: "Le prix maximum doit être un nombre" });
+  }
+  res.json(
+    prix_max
+      ? chambres.filter((c) => c.prix_nuit <= Number(prix_max))
+      : chambres,
+  );
 });
 
 // Démarrage du serveur (toujours à la toute fin)
