@@ -2,8 +2,10 @@
 
 ## 1. Arborescence actuelle
 
-finder
+C:.
+└───finder
 ├───api
+│ ├───finder-data
 │ ├───node_modules
 │ │ ├───.bin
 │ │ ├───accepts
