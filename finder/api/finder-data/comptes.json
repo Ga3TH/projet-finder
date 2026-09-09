@@ -1,0 +1,83 @@
+[
+  {
+    "id": 1,
+    "role": "hotelier",
+    "email": "ravel@amor.example",
+    "mot_de_passe_clair": "Amor-2026!",
+    "nom": "Ravel",
+    "prenom": "Jean",
+    "hotel_id": 1
+  },
+  {
+    "id": 2,
+    "role": "hotelier",
+    "email": "bianchi@byzance.example",
+    "mot_de_passe_clair": "Byzance-2026!",
+    "nom": "Bianchi",
+    "prenom": "Lucia",
+    "hotel_id": 2
+  },
+  {
+    "id": 3,
+    "role": "hotelier",
+    "email": "toussaint@caraibes.example",
+    "mot_de_passe_clair": "Caraibes-2026!",
+    "nom": "Toussaint",
+    "prenom": "Marc",
+    "hotel_id": 3
+  },
+  {
+    "id": 4,
+    "role": "voyageur",
+    "email": "a.morel@mail.example",
+    "mot_de_passe_clair": "Voyage-2026!",
+    "nom": "Morel",
+    "prenom": "Anaïs",
+    "telephone": "06 11 22 33 44"
+  },
+  {
+    "id": 5,
+    "role": "voyageur",
+    "email": "k.diallo@mail.example",
+    "mot_de_passe_clair": "Voyage-2026!",
+    "nom": "Diallo",
+    "prenom": "Karim",
+    "telephone": "06 22 33 44 55"
+  },
+  {
+    "id": 6,
+    "role": "voyageur",
+    "email": "s.nguyen@mail.example",
+    "mot_de_passe_clair": "Voyage-2026!",
+    "nom": "Nguyen",
+    "prenom": "Sophie",
+    "telephone": "06 33 44 55 66"
+  },
+  {
+    "id": 7,
+    "role": "voyageur",
+    "email": "p.lefebvre@mail.example",
+    "mot_de_passe_clair": "Voyage-2026!",
+    "nom": "Lefebvre",
+    "prenom": "Paul",
+    "telephone": "06 44 55 66 77"
+  },
+  {
+    "id": 8,
+    "role": "voyageur",
+    "email": "m.haddad@mail.example",
+    "mot_de_passe_clair": "Voyage-2026!",
+    "nom": "Haddad",
+    "prenom": "Maya",
+    "telephone": "06 55 66 77 88"
+  },
+  {
+    "id": 9,
+    "role": "admin",
+    "email": "admin@sentinox.example",
+    "mot_de_passe_clair": "Admin-2026!",
+    "nom": "Sentinox",
+    "prenom": "Admin",
+    "note": "BONUS : compte du role admin, inutile tant que l'etape bonus n'est pas faite"
+  }
+]
