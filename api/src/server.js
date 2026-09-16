@@ -8,7 +8,6 @@ const app = express();
 const PORT = process.env.PORT ?? 3000;
 const prisma = new PrismaClient();
 
-// Middleware pour lire le JSON
 app.use(express.json());
 
 app.get("/health", (req, res) => {
