@@ -89,7 +89,8 @@ app.get("/chambres", async (req, res) => {
   if (hotel) {
     if (!Number.isNaN(Number(hotel))) {
       filtre.hotelId = Number(hotel);
-    } else {
+    } 
+    else {
       filtre.hotel = { nom: { contains: String(hotel) } };
     }
   }
@@ -99,8 +100,8 @@ app.get("/chambres", async (req, res) => {
   if (categorie) filtre.categorie = { 
     contains: String(categorie) 
   };
-  if (capacite) filtre.capacite = { 
-    equals: Number(capacite) 
+  if (capacite) filtre.capacite = {
+    equals: Number(capacite)
   };
 
   if (date_debut && date_fin) {
