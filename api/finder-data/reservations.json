@@ -1,0 +1,82 @@
+[
+  {
+    "id": 1,
+    "voyageur_id": 4,
+    "chambre_id": 4,
+    "date_arrivee": "2026-10-09",
+    "date_depart": "2026-10-11",
+    "nb_personnes": 2,
+    "statut": "confirmee",
+    "demande_speciale": "Chambre calme, côté cour si possible."
+  },
+  {
+    "id": 2,
+    "voyageur_id": 5,
+    "chambre_id": 13,
+    "date_arrivee": "2026-10-16",
+    "date_depart": "2026-10-18",
+    "nb_personnes": 2,
+    "statut": "en_attente",
+    "demande_speciale": ""
+  },
+  {
+    "id": 3,
+    "voyageur_id": 6,
+    "chambre_id": 22,
+    "date_arrivee": "2026-11-02",
+    "date_depart": "2026-11-06",
+    "nb_personnes": 4,
+    "statut": "confirmee",
+    "demande_speciale": "Lit bébé."
+  },
+  {
+    "id": 4,
+    "voyageur_id": 4,
+    "chambre_id": 12,
+    "date_arrivee": "2026-12-20",
+    "date_depart": "2026-12-27",
+    "nb_personnes": 2,
+    "statut": "annulee",
+    "demande_speciale": ""
+  },
+  {
+    "id": 5,
+    "voyageur_id": 7,
+    "chambre_id": 21,
+    "date_arrivee": "2026-10-09",
+    "date_depart": "2026-10-10",
+    "nb_personnes": 1,
+    "statut": "refusee",
+    "demande_speciale": "Arrivée après 23 h."
+  },
+  {
+    "id": 6,
+    "voyageur_id": 8,
+    "chambre_id": 9,
+    "date_arrivee": "2027-02-13",
+    "date_depart": "2027-02-15",
+    "nb_personnes": 2,
+    "statut": "en_attente",
+    "demande_speciale": "Vélos pour deux."
+  },
+  {
+    "id": 7,
+    "voyageur_id": 5,
+    "chambre_id": 19,
+    "date_arrivee": "2027-04-03",
+    "date_depart": "2027-04-07",
+    "nb_personnes": 2,
+    "statut": "confirmee",
+    "demande_speciale": ""
+  },
+  {
+    "id": 8,
+    "voyageur_id": 6,
+    "chambre_id": 4,
+    "date_arrivee": "2026-10-10",
+    "date_depart": "2026-10-12",
+    "nb_personnes": 2,
+    "statut": "en_attente",
+    "demande_speciale": "Chevauche la réservation 1 d'une nuit : cas de test de la règle anti-double."
+  }
+]
