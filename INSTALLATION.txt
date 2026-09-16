@@ -1,0 +1,255 @@
+TUTO COMPLET D'INSTALLATION DE FINDER SUR UN NOUVEAU POSTE
+==========================================================
+
+Ce tutoriel explique l'installation avec Laragon, MySQL, Node.js,
+Prisma et le lancement de l'API.
+
+
+1. Installer les logiciels
+--------------------------
+
+Installer :
+- Laragon
+- Node.js LTS
+- Git, si le projet est sur GitHub
+- Visual Studio Code, conseille pour ouvrir le projet
+
+Dans un nouveau terminal PowerShell, verifier Node.js :
+
+node --version
+npm --version
+
+Si une version s'affiche pour les deux commandes, Node.js est installe.
+
+
+2. Installer et demarrer Laragon
+--------------------------------
+
+1. Ouvrir Laragon.
+2. Cliquer sur "Start All".
+3. Verifier que MySQL est demarre.
+
+Avec une installation Laragon classique :
+- utilisateur MySQL : root
+- mot de passe : vide
+- serveur : localhost
+- port : 3306
+
+Si le mot de passe ou le port est different, il faudra modifier DATABASE_URL
+dans l'etape 5.
+
+
+3. Recuperer le projet
+----------------------
+
+Option A : avec GitHub
+
+git clone ADRESSE_DU_DEPOT
+cd projet-finder
+
+Remplacer ADRESSE_DU_DEPOT par l'adresse reelle du depot.
+
+Option B : avec une copie du projet
+
+Copier le dossier projet-finder sur le nouveau poste, puis ouvrir PowerShell
+dans ce dossier.
+
+Verifier que le terminal est bien a la racine :
+
+Get-ChildItem
+
+Le dossier doit contenir package.json et le dossier finder.
+
+
+4. Installer les dependances Node.js
+------------------------------------
+
+Depuis la racine du projet projet-finder :
+
+npm install
+npm --prefix finder/api install
+
+
+5. Creer la base de donnees dans Laragon
+----------------------------------------
+
+Dans Laragon, ouvrir HeidiSQL avec le bouton "Database".
+
+Se connecter avec :
+- utilisateur : root
+- mot de passe : vide, sauf modification personnelle
+- serveur : 127.0.0.1
+- port : 3306
+
+Dans HeidiSQL, creer une base appelee :
+
+finder
+
+On peut aussi executer cette commande SQL :
+
+CREATE DATABASE finder;
+
+Ne pas creer les tables manuellement. Prisma les cree avec les migrations.
+
+
+6. Configurer la connexion a MySQL
+----------------------------------
+
+Creer ou modifier ce fichier :
+
+finder/api/.env
+
+Avec Laragon par defaut, mettre :
+
+PORT=3000
+DATABASE_URL="mysql://root:@127.0.0.1:3306/finder"
+
+Si MySQL possede un mot de passe, utiliser :
+
+DATABASE_URL="mysql://root:MOT_DE_PASSE@127.0.0.1:3306/finder"
+
+Remplacer MOT_DE_PASSE par le vrai mot de passe.
+
+Si MySQL utilise un autre port, remplacer 3306 par ce port.
+
+Important : DATABASE_URL doit etre defini dans finder/api/.env.
+Si un fichier .env existe aussi a la racine et contient DATABASE_URL,
+le supprimer ou retirer cette ligne pour eviter un conflit Prisma.
+
+
+7. Creer les tables avec Prisma
+--------------------------------
+
+Depuis la racine du projet :
+
+npx prisma generate
+npx prisma migrate deploy
+
+Ces commandes utilisent le schema situe dans :
+
+finder/api/prisma/schema.prisma
+
+Si Prisma demande une connexion, verifier que MySQL est demarre dans Laragon
+et que DATABASE_URL est correcte.
+
+
+8. Ajouter les donnees de test
+------------------------------
+
+Depuis la racine du projet :
+
+npm run db:seed
+
+Le seed vide les anciennes donnees puis ajoute les hotels, chambres, comptes
+et reservations contenus dans finder/api/finder-data.
+
+Attention : cette commande remplace les donnees deja presentes dans ces tables.
+
+Un message similaire doit s'afficher :
+
+3 hotels, 32 chambres, 9 comptes, 8 reservations
+
+
+9. Verifier le projet
+---------------------
+
+Depuis la racine :
+
+npm run check
+
+La commande doit se terminer sans erreur.
+
+
+10. Demarrer l'API
+------------------
+
+Depuis la racine du projet :
+
+npm run dev
+
+Message attendu :
+
+API sur http://localhost:3000
+
+Pour arreter le serveur :
+
+Ctrl + C
+
+Pour un lancement sans redemarrage automatique :
+
+npm run start
+
+
+11. Tester l'API
+---------------
+
+Ouvrir un deuxieme terminal PowerShell sans arreter le serveur.
+
+Tester l'etat de l'API :
+
+curl.exe http://localhost:3000/health
+
+Resultat attendu :
+
+{"statut":"ok"}
+
+Tester toutes les chambres :
+
+curl.exe http://localhost:3000/chambres
+
+Tester seulement les chambres de l'hotel Amor :
+
+curl.exe "http://localhost:3000/chambres?hotel=Amor"
+
+Ajouter un prix maximum :
+
+curl.exe "http://localhost:3000/chambres?hotel=Amor&prixmax=100"
+
+Ajouter une categorie et une capacite :
+
+curl.exe "http://localhost:3000/chambres?hotel=Amor&prixmax=100&categorie=double&capacite=2"
+
+Cette derniere requete doit retourner 6 chambres doubles de l'hotel Amor,
+avec une capacite de 2 personnes et un prix de 95 euros par nuit.
+
+
+12. Ouvrir Prisma Studio
+------------------------
+
+Depuis la racine :
+
+cd finder/api
+npx prisma studio
+
+Ouvrir ensuite dans le navigateur :
+
+http://localhost:5555
+
+Attention : la commande s'ecrit prisma, pas prima.
+
+
+13. Problemes frequents
+-----------------------
+
+Probleme : npm n'est pas reconnu.
+Solution : installer Node.js LTS puis fermer et rouvrir PowerShell.
+
+Probleme : la connexion a MySQL echoue.
+Solution : cliquer sur "Start All" dans Laragon et verifier le port,
+l'utilisateur, le mot de passe et DATABASE_URL.
+
+Probleme : conflit entre .env et finder/api/.env.
+Solution : garder DATABASE_URL uniquement dans finder/api/.env.
+
+Probleme : npm run dev ne demarre pas.
+Solution : revenir a la racine projet-finder et relancer npm run dev.
+
+Probleme : le port 3000 est deja utilise.
+Solution : arreter l'ancien serveur ou modifier PORT dans finder/api/.env.
+
+Probleme : Prisma Studio ne montre pas les tables.
+Solution : executer npx prisma migrate deploy puis npm run db:seed.
+
+Probleme : aucune chambre n'est retournee.
+Solution : verifier que le seed a ete execute et que les parametres de l'URL
+correspondent aux donnees, par exemple hotel=Amor et categorie=double.
