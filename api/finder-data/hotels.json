@@ -1,0 +1,38 @@
+[
+  {
+    "id": 1,
+    "nom": "Amor",
+    "etoiles": 3,
+    "adresse": "14 quai des Pêcheurs",
+    "code_postal": "17000",
+    "ville": "La Rochelle",
+    "telephone": "05 46 00 11 22",
+    "email": "contact@amor.example",
+    "gerant": "M. Ravel",
+    "description": "Hôtel de charme sur le vieux port, 12 chambres, petit-déjeuner maison, vélos prêtés aux clients."
+  },
+  {
+    "id": 2,
+    "nom": "Byzance",
+    "etoiles": 4,
+    "adresse": "3 rue de la Coupole",
+    "code_postal": "67000",
+    "ville": "Strasbourg",
+    "telephone": "03 88 00 33 44",
+    "email": "contact@byzance.example",
+    "gerant": "Mme Bianchi",
+    "description": "Hôtel de centre-ville dans un immeuble de 1900, 10 chambres, salon de thé, accès tramway à cent mètres."
+  },
+  {
+    "id": 3,
+    "nom": "Caraïbes",
+    "etoiles": 2,
+    "adresse": "Route de la plage",
+    "code_postal": "34250",
+    "ville": "Palavas-les-Flots",
+    "telephone": "04 67 00 55 66",
+    "email": "contact@caraibes.example",
+    "gerant": "M. Toussaint",
+    "description": "Hôtel familial face à la mer, 10 chambres, parking gratuit, animaux acceptés."
+  }
+]
