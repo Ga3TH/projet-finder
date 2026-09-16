@@ -1,42 +1,54 @@
 import "dotenv/config";
 import express from "express";
-import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import path from "node:path";
+import { PrismaClient } from "@prisma/client";
 
 const app = express();
 const PORT = process.env.PORT ?? 3000;
+const prisma = new PrismaClient();
 
 // Middleware pour lire le JSON
 app.use(express.json());
 
-// Chargement des données des chambres
-const chambres = JSON.parse(
-  readFileSync(
-    path.join(import.meta.dirname, "..", "finder-data", "chambres.json"),
-    "utf8",
-  ),
-);
+app.get("/health", (req, res) => {
+  res.json({ statut: "ok" });
+});
 
-// Chargement des données des hotels
-const hotels = JSON.parse(
-  readFileSync(
-    path.join(import.meta.dirname, "..", "finder-data", "hotels.json"),
-    "utf8",
-  ),
-);
-
-//Routes Hôtels et Chambres
-app.get("/hotels", (req, res) => {
+app.get("/hotels", async (req, res) => {
+  const hotels = await prisma.hotels.findMany();
   res.json(hotels);
 });
-/*app.get("/chambres", (req, res) => {
-  res.json(chambres);
-});*/
 
-// Route pour récupérer un hôtel spécifique par son ID
-app.get("/hotels/:id", (req, res) => {
+app.get("/hotels/:id/chambres", async (req, res) => {
   const id = Number(req.params.id);
-  const hotel = hotels.find((h) => h.id === id);
+
+  if (!Number.isInteger(id)) {
+    return res.status(404).json({ erreur: "Hôtel introuvable" });
+  }
+
+  const hotel = await prisma.hotels.findUnique({ where: { id } });
+
+  if (!hotel) {
+    return res.status(404).json({ erreur: "Hôtel introuvable" });
+  }
+
+  const chambres = await prisma.chambres.findMany({
+    where: { hotelId: id },
+  });
+
+  res.json(chambres);
+});
+
+app.get("/hotels/:id", async (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id)) {
+    return res
+      .status(400)
+      .json({ erreur: "L'identifiant doit être un entier" });
+  }
+
+  const hotel = await prisma.hotels.findUnique({ where: { id } });
 
   if (!hotel) {
     return res.status(404).json({ erreur: "Hôtel introuvable" });
@@ -45,10 +57,15 @@ app.get("/hotels/:id", (req, res) => {
   res.json(hotel);
 });
 
-// Route pour récupérer une chambre spécifique par son ID
-app.get("/chambres/:id", (req, res) => {
+app.get("/chambres/:id", async (req, res) => {
   const id = Number(req.params.id);
-  const chambre = chambres.find((c) => c.id === id);
+  if (!Number.isInteger(id)) {
+    return res
+      .status(400)
+      .json({ erreur: "L'identifiant doit être un entier" });
+  }
+
+  const chambre = await prisma.chambres.findUnique({ where: { id } });
 
   if (!chambre) {
     return res.status(404).json({ erreur: "Chambre introuvable" });
@@ -57,20 +74,30 @@ app.get("/chambres/:id", (req, res) => {
   res.json(chambre);
 });
 
-//route filtrer suivant le prix
-app.get("/chambres", (req, res) => {
+app.get("/chambres", async (req, res) => {
   const { prix_max } = req.query;
-  if (isNaN(Number(prix_max))) {
-    return res
-      .status(400)
-      .json({ erreur: "Le prix maximum doit être un nombre" });
+  if (prix_max === undefined) {
+    return res.json(await prisma.chambres.findMany());
   }
-  res.json(
-    prix_max
-      ? chambres.filter((c) => c.prix_nuit <= Number(prix_max))
-      : chambres,
-  );
+
+  const prixMaximum = Number(prix_max);
+  if (!Number.isFinite(prixMaximum) || prixMaximum < 0) {
+    return res.status(400).json({
+      erreur: "Le prix maximum doit être un nombre positif ou nul",
+    });
+  }
+
+  const chambres = await prisma.chambres.findMany({
+    where: { prixNuit: { lte: prixMaximum } },
+  });
+  res.json(chambres);
 });
 
-// Démarrage du serveur (toujours à la toute fin)
-app.listen(PORT, () => console.log(`API sur http://localhost:${PORT}`));
+export { app };
+
+if (
+  process.argv[1] &&
+  path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)
+) {
+  app.listen(PORT, () => console.log(`API sur http://localhost:${PORT}`));
+}

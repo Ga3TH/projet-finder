@@ -1,0 +1,75 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+datasource db {
+  provider = "mysql"
+  url = env("DATABASE_URL")
+}
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Début de Notre Model pour la DB
+
+model Hotels {
+  id          Int        @id @default(autoincrement())
+  nom         String
+  etoiles     Int
+  adresse     String
+  codePostal  String        @map("code_postal")
+  ville       String
+  telephone   String
+  email       String
+  gerant      String
+  description String
+  chambres    Chambres[]
+  comptes     Comptes[]
+
+  @@map("hotel")
+}
+
+model Chambres {
+  id           Int            @id @default(autoincrement())
+  hotelId      Int            @map("hotel_id")
+  hotel        Hotels         @relation(fields: [hotelId], references: [id])
+  numero       Int
+  categorie    String
+  capacite     Int
+  prixNuit     Int            @map("prix_nuit")
+  description  String
+  disponible   Boolean
+  reservations Reservations[]
+
+  @@map("chambre")
+}
+
+model Comptes {
+  id              Int            @id @default(autoincrement())
+  role            String
+  email           String         @unique
+  motDePasseClair String         @map("mot_de_passe_clair")
+  nom             String
+  prenom          String
+  hotelId         Int?           @map("hotel_id")
+  hotel           Hotels?        @relation(fields: [hotelId], references: [id])
+  telephone       String?
+  reservations    Reservations[]
+
+  @@map("compte")
+}
+
+model Reservations {
+  id         Int      @id @default(autoincrement())
+  chambreId  Int      @map("chambre_id")
+  chambre    Chambres @relation(fields: [chambreId], references: [id])
+  compteId   Int      @map("compte_id")
+  compte     Comptes  @relation(fields: [compteId], references: [id])
+  dateDebut  DateTime @map("date_debut")
+  dateFin    DateTime @map("date_fin")
+  statut     String
+
+  @@map("reservation")
+}
