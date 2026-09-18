@@ -1,218 +1,84 @@
 # Architecture du projet Finder
 
-## 1. Arborescence actuelle
+## Vue d'ensemble
 
-C:.
-└───finder
-├───api
-│ ├───finder-data
-│ ├───node_modules
-│ │ ├───.bin
-│ │ ├───accepts
-│ │ ├───anymatch
-│ │ ├───balanced-match
-│ │ │ └───dist
-│ │ │ ├───commonjs
-│ │ │ └───esm
-│ │ ├───binary-extensions
-│ │ ├───body-parser
-│ │ │ ├───lib
-│ │ │ │ └───types
-│ │ │ └───node_modules
-│ │ │ └───content-type
-│ │ │ └───dist
-│ │ ├───brace-expansion
-│ │ │ └───dist
-│ │ │ ├───commonjs
-│ │ │ └───esm
-│ │ ├───braces
-│ │ │ └───lib
-│ │ ├───bytes
-│ │ ├───call-bind-apply-helpers
-│ │ │ ├───.github
-│ │ │ └───test
-│ │ ├───call-bound
-│ │ │ ├───.github
-│ │ │ └───test
-│ │ ├───chokidar
-│ │ │ ├───lib
-│ │ │ └───types
-│ │ ├───content-disposition
-│ │ ├───content-type
-│ │ ├───cookie
-│ │ ├───cookie-signature
-│ │ ├───debug
-│ │ │ └───src
-│ │ ├───depd
-│ │ │ └───lib
-│ │ │ └───browser
-│ │ ├───dotenv
-│ │ │ ├───lib
-│ │ │ └───skills
-│ │ │ ├───dotenv
-│ │ │ └───dotenvx
-│ │ ├───dunder-proto
-│ │ │ ├───.github
-│ │ │ └───test
-│ │ ├───ee-first
-│ │ ├───encodeurl
-│ │ ├───es-define-property
-│ │ │ ├───.github
-│ │ │ └───test
-│ │ ├───es-errors
-│ │ │ ├───.github
-│ │ │ └───test
-│ │ ├───es-object-atoms
-│ │ │ ├───.github
-│ │ │ └───test
-│ │ ├───escape-html
-│ │ ├───etag
-│ │ ├───express
-│ │ │ └───lib
-│ │ ├───fill-range
-│ │ ├───finalhandler
-│ │ ├───forwarded
-│ │ ├───fresh
-│ │ ├───function-bind
-│ │ │ ├───.github
-│ │ │ └───test
-│ │ ├───get-intrinsic
-│ │ │ ├───.github
-│ │ │ └───test
-│ │ ├───get-proto
-│ │ │ ├───.github
-│ │ │ └───test
-│ │ ├───glob-parent
-│ │ ├───gopd
-│ │ │ ├───.github
-│ │ │ └───test
-│ │ ├───has-flag
-│ │ ├───has-symbols
-│ │ │ ├───.github
-│ │ │ └───test
-│ │ │ └───shams
-│ │ ├───hasown
-│ │ │ └───.github
-│ │ ├───http-errors
-│ │ ├───iconv-lite
-│ │ │ ├───encodings
-│ │ │ │ └───tables
-│ │ │ ├───lib
-│ │ │ │ └───helpers
-│ │ │ └───types
-│ │ ├───ignore-by-default
-│ │ ├───inherits
-│ │ ├───ipaddr.js
-│ │ │ └───lib
-│ │ ├───is-binary-path
-│ │ ├───is-extglob
-│ │ ├───is-glob
-│ │ ├───is-number
-│ │ ├───is-promise
-│ │ ├───math-intrinsics
-│ │ │ ├───.github
-│ │ │ ├───constants
-│ │ │ └───test
-│ │ ├───media-typer
-│ │ ├───merge-descriptors
-│ │ ├───mime-db
-│ │ ├───mime-types
-│ │ ├───minimatch
-│ │ │ └───dist
-│ │ │ ├───commonjs
-│ │ │ └───esm
-│ │ ├───ms
-│ │ ├───negotiator
-│ │ │ ├───lib
-│ │ │ └───node_modules
-│ │ │ └───content-type
-│ │ │ └───dist
-│ │ ├───nodemon
-│ │ │ ├───bin
-│ │ │ ├───doc
-│ │ │ │ └───cli
-│ │ │ └───lib
-│ │ │ ├───cli
-│ │ │ ├───config
-│ │ │ ├───help
-│ │ │ ├───monitor
-│ │ │ ├───rules
-│ │ │ └───utils
-│ │ ├───normalize-path
-│ │ ├───object-inspect
-│ │ │ ├───.github
-│ │ │ ├───example
-│ │ │ └───test
-│ │ │ └───browser
-│ │ ├───on-finished
-│ │ ├───once
-│ │ ├───parseurl
-│ │ ├───path-to-regexp
-│ │ │ └───dist
-│ │ ├───picomatch
-│ │ │ └───lib
-│ │ ├───proxy-addr
-│ │ ├───pstree.remy
-│ │ │ ├───lib
-│ │ │ └───tests
-│ │ │ └───fixtures
-│ │ ├───qs
-│ │ │ ├───.github
-│ │ │ ├───dist
-│ │ │ ├───lib
-│ │ │ └───test
-│ │ ├───range-parser
-│ │ ├───raw-body
-│ │ ├───readdirp
-│ │ ├───router
-│ │ │ └───lib
-│ │ ├───safer-buffer
-│ │ ├───semver
-│ │ │ ├───bin
-│ │ │ ├───classes
-│ │ │ ├───functions
-│ │ │ ├───internal
-│ │ │ └───ranges
-│ │ ├───send
-│ │ ├───serve-static
-│ │ ├───setprototypeof
-│ │ │ └───test
-│ │ ├───side-channel
-│ │ │ ├───.github
-│ │ │ └───test
-│ │ ├───side-channel-list
-│ │ │ ├───.github
-│ │ │ └───test
-│ │ ├───side-channel-map
-│ │ │ ├───.github
-│ │ │ └───test
-│ │ ├───side-channel-weakmap
-│ │ │ ├───.github
-│ │ │ └───test
-│ │ ├───simple-update-notifier
-│ │ │ ├───build
-│ │ │ └───src
-│ │ ├───statuses
-│ │ ├───supports-color
-│ │ ├───to-regex-range
-│ │ ├───toidentifier
-│ │ ├───touch
-│ │ │ └───bin
-│ │ ├───type-is
-│ │ │ └───node_modules
-│ │ │ └───content-type
-│ │ │ └───dist
-│ │ ├───undefsafe
-│ │ │ ├───.github
-│ │ │ │ └───workflows
-│ │ │ └───lib
-│ │ ├───unpipe
-│ │ ├───vary
-│ │ └───wrappy
-│ ├───src
-│ └───tests
-├───docs
-│ └───rgpd
-├───front
-│ └───src
-└───script
+Finder est une API de réservation de chambres d'hôtel. Le projet est organisé autour d'un serveur Express et d'une base MySQL gérée avec Prisma.
+
+```text
+projet-finder/
+├── api/
+│   ├── src/server.js       # serveur Express et routes HTTP
+│   ├── prisma/
+│   │   ├── schema.prisma   # modèles de données
+│   │   ├── migrations/     # évolution de la base
+│   │   └── seed.js          # données initiales
+│   ├── finder-data/         # fichiers de données du projet
+│   ├── package.json         # scripts et dépendances
+│   ├── package-lock.json
+│   ├── .env.example         # modèle de configuration
+│   └── README.md
+├── docs/
+│   ├── ARCHITECTURE.md
+│   ├── SPEC.md
+│   └── rgpd/
+├── front/                  # espace prévu pour le futur front
+└── script/                 # scripts utilitaires
+```
+
+Les dossiers `node_modules/`, les caches Prisma, les fichiers `.env` locaux et les fichiers temporaires ne sont pas décrits ici : ils sont générés ou propres à chaque machine.
+
+## API
+
+Le serveur est défini dans `api/src/server.js`. Il utilise :
+
+- Express pour les routes HTTP ;
+- `dotenv` pour charger les variables d'environnement ;
+- Prisma Client pour accéder à MySQL ;
+- `bcrypt` pour les opérations liées aux mots de passe.
+
+Le serveur se lance depuis le dossier `api` :
+
+```powershell
+cd api
+npm run dev
+```
+
+## Routes principales
+
+- `GET /health` : vérifie que l'API répond ;
+- `GET /hotels` : liste les hôtels ;
+- `GET /hotels/:id` : récupère un hôtel ;
+- `GET /hotels/:id/chambres` : liste les chambres d'un hôtel ;
+- `GET /chambres` : liste les chambres avec filtres possibles ;
+- `GET /chambres/:id` : récupère une chambre.
+
+Les filtres de `/chambres` peuvent porter sur l'hôtel, le prix maximal, la catégorie, la capacité et la disponibilité entre deux dates.
+
+## Base de données
+
+Le schéma Prisma se trouve dans `api/prisma/schema.prisma`. Les modèles principaux sont :
+
+- `Hotels` ;
+- `Chambres` ;
+- `Comptes` ;
+- `Reservations`.
+
+La relation principale est la suivante : un hôtel possède plusieurs chambres, une chambre peut être liée à plusieurs réservations, et une réservation est associée à un compte.
+
+La connexion est configurée avec `DATABASE_URL` dans `api/.env`. Ce fichier reste local et ne doit pas être publié.
+
+## Scripts utiles
+
+Depuis `api` :
+
+```powershell
+npm run dev       # démarre le serveur avec redémarrage automatique
+npm start         # démarre le serveur
+npm run check     # vérifie la syntaxe JavaScript
+npm test          # lance les tests présents
+npm run db:seed   # insère les données initiales
+npx prisma validate
+npx prisma migrate status
+```
+
+Les dépendances installées dans `api/node_modules/` sont générées avec `npm install` et ne font pas partie de l'architecture fonctionnelle du projet.

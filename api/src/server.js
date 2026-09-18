@@ -74,14 +74,8 @@ app.get("/chambres/:id", async (req, res) => {
 });
 
 app.get("/chambres", async (req, res) => {
-  const {
-    hotel,
-    prixmax,
-    categorie,
-    capacite,
-    date_debut,
-    date_fin
-  } = req.query;
+  const { hotel, prixmax, categorie, capacite, date_debut, date_fin } =
+    req.query;
 
   const filtre = {};
 
@@ -92,15 +86,18 @@ app.get("/chambres", async (req, res) => {
       filtre.hotel = { nom: { contains: String(hotel) } };
     }
   }
-  if (prixmax) filtre.prixNuit = { 
-    lte: Number(prixmax) 
-  };
-  if (categorie) filtre.categorie = { 
-    contains: String(categorie) 
-  };
-  if (capacite) filtre.capacite = { 
-    equals: Number(capacite) 
-  };
+  if (prixmax)
+    filtre.prixNuit = {
+      lte: Number(prixmax),
+    };
+  if (categorie)
+    filtre.categorie = {
+      contains: String(categorie),
+    };
+  if (capacite)
+    filtre.capacite = {
+      equals: Number(capacite),
+    };
 
   if (date_debut && date_fin) {
     const debut = new Date(String(date_debut));
@@ -112,7 +109,7 @@ app.get("/chambres", async (req, res) => {
 
     if (debut >= fin) {
       return res.status(400).json({
-        erreur: "date_debut doit être strictement avant date_fin"
+        erreur: "date_debut doit être strictement avant date_fin",
       });
     }
 
@@ -120,21 +117,28 @@ app.get("/chambres", async (req, res) => {
       none: {
         statut: "confirmee",
         dateDebut: { lt: fin },
-        dateFin: { gt: debut }
-      }
+        dateFin: { gt: debut },
+      },
     };
   }
 
   const chambres = await prisma.chambres.findMany({
     where: filtre,
     include: {
-      hotel: true
-    }
+      hotel: true,
+    },
   });
 
   res.json(chambres);
 });
 
+app.post("/auth/register", async (req, res) => {
+  const { email, motdepasse } = req.body;
+
+  if (!email || !motdepasse) {
+    return res.status(400).json({ erreur: "Email et mot de passe requis" });
+  }
+});
 export { app };
 
 if (
