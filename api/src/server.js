@@ -8,7 +8,7 @@ import { PrismaClient } from "@prisma/client";
 
 const app = express();
 const PORT = process.env.PORT ?? 3000;
-const JWT_SECRET = process.env.JWT_SECRET ?? "dev-secret";
+const JWT_SECRET = process.env.JWT_SECRET;
 const prisma = new PrismaClient();
 
 app.use(express.json());
