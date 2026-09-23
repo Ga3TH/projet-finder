@@ -50,7 +50,7 @@ model Comptes {
   id              Int            @id @default(autoincrement())
   role            String
   email           String         @unique
-  motDePasseClair String         @map("mot_de_passe_clair")
+  motDePasse      String         @map("mot_de_passe_clair")
   nom             String
   prenom          String
   hotelId         Int?           @map("hotel_id")
