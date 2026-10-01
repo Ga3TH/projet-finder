@@ -246,7 +246,7 @@ app.get("/chambres", async (req, res) => {
 
     filtre.reservations = {
       none: {
-        statut: { equal: String("statut" ?? "confirmee") },
+        statut: { equals: "confirmee" },
         dateDebut: { lt: fin },
         dateFin: { gt: debut },
       },
@@ -535,6 +535,44 @@ app.patch(
     });
 
     return res.json(reservationMiseAJour);
+  },
+);
+
+app.delete(
+  "/reservations/:id",
+  authentifier,
+  exigeRole("voyageur"),
+  async (req, res) => {
+    const id = Number(req.params.id);
+
+    if (!Number.isInteger(id) || id <= 0) {
+      return res.status(400).json({ erreur: "Identifiant invalide" });
+    }
+
+    const reservation = await prisma.reservations.findUnique({
+      where: { id },
+    });
+
+    if (!reservation) {
+      return res.status(404).json({ erreur: "Réservation introuvable" });
+    }
+
+    if (reservation.compteId !== Number(req.user.id)) {
+      return res.status(403).json({
+        erreur: "Vous ne pouvez annuler que vos propres réservations",
+      });
+    }
+
+    if (!["en_attente", "confirmee"].includes(reservation.statut)) {
+      return res.status(409).json({ erreur: "Annulation impossible" });
+    }
+
+    const reservationAnnulee = await prisma.reservations.update({
+      where: { id },
+      data: { statut: "annulee" },
+    });
+
+    return res.json(reservationAnnulee);
   },
 );
 

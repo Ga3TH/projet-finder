@@ -1,44 +1,40 @@
 # Finder API
 
-API Express du projet Finder. Les routes publiques utilisent les fichiers JSON de `finder-data/`.
+API Express avec persistance MySQL via Prisma. Toutes les commandes
+s'exécutent depuis le dossier `api`.
 
 ## Installation
 
-Depuis la racine du dépôt :
-
 ```powershell
 npm install
-npm --prefix finder/api install
+Copy-Item .env.example .env
 ```
 
-Créer `finder/api/.env` à partir de `.env.example` si une base MySQL est utilisée.
+Renseigner `PORT` et `DATABASE_URL` dans `.env`, puis préparer la base :
+
+```powershell
+npx prisma generate
+npx prisma migrate deploy
+```
+
+Pour charger les données de démonstration, lancer `npm run db:seed`. Attention :
+le seed remplace les données existantes des tables Finder.
 
 ## Commandes
 
-Depuis la racine :
+- `npm run dev` : démarrer en mode développement.
+- `npm start` : démarrer le serveur.
+- `npm run check` : vérifier la syntaxe JavaScript.
+- `npm test` : lancer les tests d'intégration.
 
-```powershell
-npm run start
-npm run dev
-npm test
-npm run check
-```
+Les tests nécessitent une base MySQL migrée et chargée avec le seed. Le serveur
+répond à `GET /health` avec `{"statut":"ok"}`. Les erreurs API sont renvoyées
+en JSON avec une propriété `erreur`.
 
-Depuis `finder/api` :
+## Routes principales
 
-```powershell
-npm run db:seed
-```
-
-Le seed nécessite une base MySQL accessible avec `DATABASE_URL` et remplace les données existantes des tables Finder.
-
-## Routes disponibles
-
-- `GET /health` : vérifie que l'API répond.
-- `GET /hotels` : liste les hôtels.
-- `GET /hotels/:id` : retourne un hôtel.
-- `GET /chambres` : liste les chambres.
-- `GET /chambres/:id` : retourne une chambre.
-- `GET /chambres?prix_max=100` : filtre les chambres par prix maximum à la nuit.
-
-Les erreurs sont retournées au format JSON avec une propriété `erreur`.
+- `GET /hotels`, `GET /hotels/:id`
+- `GET /chambres`, `GET /chambres/:id`, `GET /hotels/:id/chambres`
+- `POST /auth/register`, `POST /auth/login`, `GET /me`
+- `POST /reservations`, `GET /reservations/mine`, `GET /reservations/received`
+- `PATCH /reservations/:id`, `DELETE /reservations/:id`

@@ -1,25 +1,39 @@
 # finder/README.md
-
 # Finder
 
-Réservation de chambres d'hôtel pour le groupement Amor, Byzance, Caraïbes :
-une API Express, bientôt un front React.
+API de réservation de chambres d'hôtel pour le groupement Amor, Byzance et
+Caraïbes. Le serveur Express et son client Prisma se trouvent dans `api`.
 
 ## Démarrer
 
-cd api ; npm install
-Copy-Item .env.example .env # puis remplir PORT et DATABASE_URL
+Depuis la racine du dépôt, installer l'API et créer sa configuration locale :
+
+```powershell
+cd api
+npm install
+Copy-Item .env.example .env
+```
+
+Renseigner `PORT` et `DATABASE_URL` dans `api/.env`, puis préparer MySQL et
+démarrer le serveur :
+
+```powershell
+npx prisma generate
+npx prisma migrate deploy
 npm run dev
-curl.exe http://localhost:3000/health # attendu : {"ok":true}
+```
+
+Vérifier avec `curl.exe http://localhost:3000/health`. La réponse attendue est
+`{"statut":"ok"}`.
+
+## Vérifications
+
+Depuis `api`, lancer `npm run check` et `npm test`. Les tests d'intégration
+nécessitent une base MySQL migrée et chargée avec les données de démonstration.
 
 ## Structure
 
-docs/ spec.md, la spec du sprint api/finder-data/ le kit,
-jamais modifié
-api/ l'API Express api/src/server.js le serveur et
-ses routes
-
-# api/.env.example (commité, valeurs vides)
-
-PORT=
-DATABASE_URL=
+- `api/src/server.js` : routes Express.
+- `api/prisma/` : schéma, migrations et seed.
+- `api/finder-data/` : données de démonstration.
+- `docs/` : spécification et documentation du projet.
