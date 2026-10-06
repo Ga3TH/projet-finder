@@ -33,7 +33,7 @@ poser de question
 [✔] GET /chambres?prix_max=89 -> 200, 12 chambres ; sans
 critère, 32
 
-## Étapes 2 à 8 - déclarées, non franchies
+## Étapes 2 à 8
 
 [✔] E2 Base MySQL via Prisma : schéma, migration, seed du kit -> tables
 visibles dans Adminer
@@ -45,9 +45,9 @@ jeton 401, mauvais rôle 403
 invalide 400, jamais 500
 [✔] E6 Réservations et statuts ->
 en_attente, confirmee, refusee, annulee
-[ ] E7 Documentation Swagger de toutes les routes -> /docs
+[✔] E7 Documentation Swagger de toutes les routes -> /docs
 les affiche toutes
-[ ] E8 Tests et recette -> npm test
+[✔] E8 Tests et recette -> npm test
 passe, TA-001 à TA-010
 
 ## Gardes
@@ -63,4 +63,6 @@ assez grand pour trancher
 
 ## Journal
 
-AAAA-MM-JJ ... création v1, étape 1
+2026-10-06 E7 : documentation OpenAPI de toutes les routes et interface Swagger /docs.
+2026-10-06 E8 : ajout des tests API TA-001 à TA-010 et de la recette client.
+2026-10-06 E8 : tests d'intégration réels avec Vitest/Supertest et MySQL seedé.

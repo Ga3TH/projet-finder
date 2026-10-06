@@ -1,203 +1,274 @@
-TUTORIEL D'INSTALLATION DE FINDER
-==================================
+TUTORIEL D'INSTALLATION DE FINDER — WINDOWS
+===========================================
 
-Ce tutoriel explique comment installer et lancer l'API Finder avec Node.js,
-MySQL, Laragon et Prisma.
+Ce tutoriel part d'un ordinateur neuf. Il explique comment installer les
+outils, récupérer le projet, préparer MySQL, lancer l'API et ouvrir Swagger.
 
-
-1. Logiciels requis
--------------------
-
-Installer :
-- Node.js LTS
-- Laragon, ou un serveur MySQL équivalent
-- Git, si le projet est récupéré depuis GitHub
-- Visual Studio Code, recommandé pour ouvrir le projet
-
-Vérifier Node.js dans PowerShell :
-
-node --version
-npm --version
+À savoir : Finder est une API, pas encore un site de réservation destiné aux
+clients. Swagger est la page web qui présente les routes de l'API et permet
+de les essayer.
 
 
-2. Récupérer le projet
-----------------------
+ÉTAPE 1 — Installer les logiciels
+---------------------------------
 
-Depuis le dossier où le projet doit être installé :
+Télécharger et installer :
 
-git clone https://github.com/Ga3TH/projet-finder.git
-cd projet-finder
+1. Node.js LTS : https://nodejs.org/
+2. Git pour Windows : https://git-scm.com/download/win
+3. Laragon : https://laragon.org/download/
+4. Visual Studio Code (facultatif, mais pratique) : https://code.visualstudio.com/
 
-Si le projet est déjà présent, ouvrir PowerShell à sa racine et vérifier sa
-structure :
+Pendant l'installation, conserver les options proposées par défaut. Une fois
+Node.js installé, fermer puis rouvrir PowerShell ou le terminal de VS Code.
 
-Get-ChildItem
+Vérifier que Node.js, npm et Git sont installés. Ouvrir PowerShell et taper :
 
-La racine doit notamment contenir les dossiers `api`, `docs`, `front` et
-`script`. Le serveur se trouve dans `api/src/server.js`.
+    node --version
+    npm --version
+    git --version
 
+Chaque commande doit afficher un numéro de version.
 
-3. Installer les dépendances
-----------------------------
+Si PowerShell affiche « l'exécution de npm.ps1 est désactivée », autoriser
+npm uniquement dans le terminal courant :
 
-Le projet Node se trouve dans `api`. Installer les dépendances depuis ce
-dossier :
+    Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 
-cd api
-npm install
-
-Toutes les dépendances sont installées dans `api/node_modules`. Les dossiers
-`node_modules` sont générés localement et ne doivent pas être commités.
-
-
-4. Démarrer MySQL et créer la base
------------------------------------
-
-1. Ouvrir Laragon.
-2. Cliquer sur "Start All".
-3. Vérifier que MySQL est démarré.
-
-Avec une installation Laragon classique :
-- utilisateur : `root`
-- mot de passe : vide
-- serveur : `localhost`
-- port : `3306`
-
-Dans HeidiSQL, créer une base appelée `finder` si elle n'existe pas encore :
-
-CREATE DATABASE finder;
-
-Ne pas créer les tables manuellement : Prisma les crée avec les migrations.
+Répondre Y si PowerShell demande confirmation. Fermer le terminal annule cette
+autorisation. Il n'est pas nécessaire de modifier durablement la sécurité de
+Windows.
 
 
-5. Configurer l'environnement
------------------------------
-
-Depuis le dossier `api`, copier le fichier d'exemple :
-
-Copy-Item .env.example .env
-
-Le fichier `api/.env` doit contenir, avec MySQL par défaut :
-
-PORT=3000
-DATABASE_URL="mysql://root:@localhost:3306/finder"
-
-Si MySQL utilise un mot de passe :
-
-DATABASE_URL="mysql://root:MOT_DE_PASSE@localhost:3306/finder"
-
-Remplacer `MOT_DE_PASSE` par le vrai mot de passe. Adapter aussi le port si
-MySQL n'utilise pas `3306`.
-
-Le fichier `.env` reste local et ne doit pas être envoyé sur GitHub.
-
-
-6. Préparer la base avec Prisma
+ÉTAPE 2 — Télécharger le projet
 -------------------------------
 
-Toutes les commandes suivantes se lancent depuis `api` :
+Dans PowerShell, créer un dossier pour le projet, cloner le dépôt GitHub et
+entrer dans le dossier de l'API :
 
-npx prisma generate
-npx prisma migrate deploy
+    New-Item -ItemType Directory -Force "$HOME\source"
+    Set-Location "$HOME\source"
+    git clone https://github.com/Ga3TH/projet-finder.git
+    Set-Location "$HOME\source\projet-finder\api"
 
-Le schéma utilisé est `api/prisma/schema.prisma`.
+Toutes les commandes npm et Prisma de ce tutoriel doivent être exécutées dans
+ce dossier api. Pour vérifier où se trouve PowerShell :
 
-Pour ajouter les données de démonstration :
-
-npm run db:seed
-
-Le seed remplace les données existantes dans les tables puis ajoute les
-hôtels, chambres, comptes et réservations prévus par le projet.
-
-
-7. Vérifier le projet
----------------------
-
-Toujours depuis `api` :
-
-npm run check
-npx prisma validate
-npm test
-
-`npm test` lance les tests présents dans le dossier `api/tests`. S'il n'y a
-pas encore de tests, Node indiquera simplement qu'aucun test n'a été trouvé.
+    Get-Location
 
 
-8. Démarrer l'API
------------------
+ÉTAPE 3 — Installer les dépendances du projet
+---------------------------------------------
 
-Important : lancer la commande depuis `api`, et non depuis `api/src` :
+Dans le dossier api, exécuter :
 
-cd C:\chemin\vers\projet-finder\api
-npm run dev
+    npm install
 
-Message attendu :
-
-API sur http://localhost:3000
-
-Pour un lancement sans redémarrage automatique :
-
-npm start
-
-Pour arrêter le serveur : `Ctrl + C`.
+Attendre la fin de l'installation. Des messages « added packages » ou « up to
+date » indiquent que l'installation est terminée.
 
 
-9. Tester l'API
----------------
+ÉTAPE 4 — Démarrer MySQL et créer la base
+----------------------------------------
 
-Ouvrir un deuxième terminal sans arrêter le serveur :
+1. Ouvrir Laragon.
+2. Cliquer sur « Start All » (ou démarrer MySQL).
+3. Ouvrir HeidiSQL depuis le menu de Laragon et se connecter au serveur local.
+   Si HeidiSQL n'est pas installé, le télécharger sur https://www.heidisql.com/.
+4. Dans HeidiSQL, ouvrir un onglet de requête, coller la commande ci-dessous
+   et l'exécuter :
 
-curl.exe http://localhost:3000/health
-curl.exe http://localhost:3000/hotels
-curl.exe http://localhost:3000/chambres
-curl.exe "http://localhost:3000/chambres?hotel=Amor"
-curl.exe "http://localhost:3000/chambres?hotel=Amor&prixmax=100"
+    CREATE DATABASE IF NOT EXISTS finder CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
-La route de santé doit répondre :
-
-{"statut":"ok"}
-
-Routes disponibles :
-- `GET /health`
-- `GET /hotels`
-- `GET /hotels/:id`
-- `GET /hotels/:id/chambres`
-- `GET /chambres`
-- `GET /chambres/:id`
+La base finder ne se crée qu'une seule fois. Si elle existe déjà, ne pas
+exécuter de nouveau la commande. Les tables seront créées par Prisma plus bas.
 
 
-10. Ouvrir Prisma Studio
-------------------------
+ÉTAPE 5 — Configurer la connexion
+---------------------------------
 
-Depuis `api` :
+Toujours depuis le dossier api, créer le fichier local .env s'il n'existe pas :
 
-npx prisma studio
+    if (-not (Test-Path .env)) { Copy-Item .env.example .env }
 
-Puis ouvrir :
+Ouvrir ce fichier dans le Bloc-notes :
 
-http://localhost:5555
+    notepad .env
 
-La commande s'écrit `prisma`, pas `prima`.
+Remplacer son contenu par les valeurs adaptées à MySQL. Pour une installation
+Laragon classique avec l'utilisateur root sans mot de passe :
+
+    PORT=3000
+    DATABASE_URL="mysql://root@127.0.0.1:3306/finder"
+    JWT_SECRET="cle-secrete-a-remplacer"
+
+Enregistrer le fichier et fermer le Bloc-notes. Si MySQL utilise un autre
+utilisateur ou un mot de passe, modifier DATABASE_URL selon ce format :
+
+    mysql://UTILISATEUR:MOT_DE_PASSE@127.0.0.1:3306/finder
+
+Les caractères spéciaux d'un mot de passe doivent être encodés dans l'URL ;
+par exemple, @ s'écrit %40. Garder le fichier .env privé : ne pas le publier
+ni l'envoyer à quelqu'un.
 
 
-11. Problèmes fréquents
------------------------
+ÉTAPE 6 — Créer les tables de la base
+-------------------------------------
 
-`npm` n'est pas reconnu :
-Installer Node.js LTS, puis fermer et rouvrir PowerShell.
+Dans PowerShell, toujours depuis le dossier api, lancer :
 
-`npm run dev` ne démarre pas :
-Vérifier que le terminal est dans `projet-finder/api`, et non dans `api/src`.
+    npx prisma generate
+    npx prisma migrate deploy
 
-La connexion MySQL échoue :
-Démarrer MySQL dans Laragon et vérifier `DATABASE_URL` dans `api/.env`.
+La première commande prépare Prisma. La deuxième crée les tables dans la base
+finder. Attendre la fin des deux commandes avant de continuer.
 
-Le port 3000 est déjà utilisé :
-Arrêter l'ancien serveur ou choisir un autre port dans `api/.env`.
+
+ÉTAPE 7 — Charger les données de démonstration
+----------------------------------------------
+
+Cette étape est nécessaire pour essayer l'API avec les hôtels, chambres et
+comptes fournis :
+
+    npm run db:seed
+
+ATTENTION : le seed efface les données Finder déjà présentes dans la base
+configurée avant d'y charger les exemples. Ne pas l'exécuter sur une base
+contenant des données à conserver.
+
+
+ÉTAPE 8 — Lancer l'API et ouvrir l'interface
+--------------------------------------------
+
+Dans le terminal PowerShell placé dans le dossier api, démarrer le serveur :
+
+    npm run dev
+
+Laisser ce terminal ouvert. Il doit afficher une adresse semblable à :
+
+    API sur http://localhost:3000
+
+
+/////////////////////////////////////////////////////////////////////
+------------------------ETAPE 8 SPRINT 1-----------------------------
+/////////////////////////////////////////////////////////////////////
+
+Ouvrir ensuite un navigateur (Edge, Chrome ou Firefox) et entrer cette
+adresse :
+
+    http://localhost:3000/docs
+
+C'est l'interface Swagger de Finder. L'API doit rester démarrée pour que la
+page fonctionne. Pour arrêter le serveur, revenir au terminal et appuyer sur
+Ctrl+C.
+
+L'adresse JSON de la documentation OpenAPI est :
+
+    http://localhost:3000/docs/openapi.json
+
+/////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////
+
+ÉTAPE 9 — Essayer une route protégée dans Swagger
+-------------------------------------------------
+
+Les comptes de démonstration ne sont disponibles qu'après le seed. Leurs
+adresses et mots de passe sont indiqués dans le fichier :
+
+    api\finder-data\comptes.json
+
+Dans Swagger :
+
+1. Ouvrir POST /auth/login et cliquer sur « Try it out ».
+2. Entrer l'adresse e-mail et le mot de passe d'un compte de démonstration.
+3. Cliquer sur « Execute » et repérer le champ token dans la réponse.
+4. Copier la valeur de token.
+5. Cliquer sur « Authorize » en haut de la page.
+6. Coller le token seul (ne pas écrire « Bearer »), puis confirmer.
+7. Choisir une route protégée, cliquer sur « Try it out », remplir les
+   champs demandés et cliquer sur « Execute ».
+
+
+VÉRIFICATION RAPIDE
+===================
+
+Pendant que l'API fonctionne, ouvrir un deuxième terminal PowerShell et lancer :
+
+    curl.exe http://localhost:3000/health
+
+La réponse attendue est :
+
+    {"statut":"ok"}
+
+
+LANCER LES TESTS AUTOMATISÉS
+============================
+
+Les dix tests Vitest/Supertest utilisent la vraie base MySQL configurée dans
+api\.env. Ils nécessitent une base migrée et chargée avec le seed.
+
+RECOMMANDÉ : créer une base de test séparée, par exemple finder_test. Dans
+HeidiSQL, exécuter :
+
+    CREATE DATABASE IF NOT EXISTS finder_test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+Dans api\.env, modifier DATABASE_URL pour qu'elle pointe vers finder_test :
+
+    DATABASE_URL="mysql://root@127.0.0.1:3306/finder_test"
+
+Ne pas utiliser cette commande de seed sur une base contenant des données à
+garder : elle efface les données Finder de la base configurée.
+
+Dans un terminal PowerShell placé dans api, exécuter dans cet ordre :
+
+    npx prisma migrate deploy
+    npm run db:seed
+    npm test
+    npm run test:coverage
+
+Le résultat attendu est 10 tests TA réussis (et le test-exemple Vitest si son
+fichier est présent), suivi d'un tableau de couverture V8 pour api\src\app.js.
+Les tests d'erreur se connectent à MySQL et consultent les données seedées,
+mais ne créent, ne modifient et ne suppriment aucune donnée.
+
+Pour vérifier qu'un test détecte bien un mauvais code HTTP, modifier
+temporairement un attendu 404 en 200 dans api\tests\api.test.js, puis lancer :
+
+    npm test -- --testNamePattern=TA-001
+
+Le test doit échouer et afficher « expected 404 to be 200 ». Remettre aussitôt
+l'attendu à 404 puis relancer `npm test` : tous les tests doivent repasser au
+vert. Ne pas laisser la modification temporaire dans le fichier.
+
+
+EN CAS DE PROBLÈME
+==================
+
+PowerShell bloque npm ou npx :
+    Exécuter Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass dans
+    ce terminal, puis réessayer la commande. Fermer le terminal remet le
+    réglage temporaire à zéro.
+
+La commande node, npm ou git n'est pas reconnue :
+    Installer le logiciel manquant, fermer puis rouvrir PowerShell, et
+    réessayer les commandes --version de l'étape 1.
+
+La connexion à MySQL échoue :
+    Vérifier que MySQL est démarré dans Laragon et que DATABASE_URL dans .env
+    correspond à l'utilisateur, au mot de passe, au port et au nom de base.
 
 Prisma ne trouve pas les tables :
-Lancer `npx prisma migrate deploy`, puis `npm run db:seed` depuis `api`.
+    Vérifier DATABASE_URL et exécuter à nouveau npx prisma generate puis
+    npx prisma migrate deploy depuis api.
 
-Aucune chambre ne s'affiche :
-Vérifier que le seed a été exécuté et que les paramètres de l'URL sont
-corrects, par exemple `hotel=Amor` ou `categorie=double`.
+La page Swagger ne s'ouvre pas :
+    Vérifier que le terminal affiche « API sur http://localhost:3000 » et
+    qu'il est toujours ouvert. Si PORT dans .env n'est pas 3000, remplacer
+    3000 par la valeur choisie dans l'adresse du navigateur.
+
+Le port 3000 est déjà utilisé :
+    Fermer l'autre application qui l'utilise ou choisir un autre PORT dans
+    .env, puis redémarrer l'API.
+
+Une liste est vide :
+    Vérifier que le seed a été exécuté sur la base configurée.

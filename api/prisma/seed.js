@@ -59,7 +59,7 @@ async function main() {
       id: c.id,
       role: c.role,
       email: c.email,
-      motDePasseClair: await bcrypt.hash(c.mot_de_passe_clair, 10),
+      motDePasse: await bcrypt.hash(c.mot_de_passe_clair, 10),
       nom: c.nom,
       prenom: c.prenom,
       hotelId: c.hotel_id ?? null,
