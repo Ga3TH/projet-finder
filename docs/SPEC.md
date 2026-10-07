@@ -32,23 +32,24 @@ n'est pas commité
 poser de question
 [✔] GET /chambres?prix_max=89 -> 200, 12 chambres ; sans
 critère, 32
+## Étapes 2 à 9
 
-## Étapes 2 à 8
-
-[✔] E2 Base MySQL via Prisma : schéma, migration, seed du kit -> tables
+[x] E2 Base MySQL via Prisma : schéma, migration, seed du kit -> tables
 visibles dans Adminer
-[✔] E3 Recherche de chambres disponibles -> GET
-/chambres?... filtre
-[✔] E4 Inscription, connexion JWT 24 h, écritures protégées -> sans
+[x] E3 Recherche de chambres disponibles -> GET
+/chambres?... filtre ; TA-004 retire la chambre 4 pendant la réservation confirmée
+[x] E4 Inscription, connexion JWT 24 h, écritures protégées -> sans
 jeton 401, mauvais rôle 403
-[✔] E5 Validation Zod [ACCEPTABLE] -> corps
+[x] E5 Validation Zod [ACCEPTABLE] -> corps
 invalide 400, jamais 500
-[✔] E6 Réservations et statuts ->
+[x] E6 Réservations et statuts ->
 en_attente, confirmee, refusee, annulee
-[✔] E7 Documentation Swagger de toutes les routes -> /docs
+[x] E7 Documentation Swagger de toutes les routes -> /docs
 les affiche toutes
-[✔] E8 Tests et recette -> npm test
-passe, TA-001 à TA-010
+[x] E8 Tests et recette -> npm test passe, TA-001 à TA-010 consignés
+dans docs/recette.md
+[x] E9 API répartie en modules -> client Prisma, middlewares, schémas et
+routeurs séparés ; app.js branche les routeurs
 
 ## Gardes
 
@@ -66,3 +67,7 @@ assez grand pour trancher
 2026-10-06 E7 : documentation OpenAPI de toutes les routes et interface Swagger /docs.
 2026-10-06 E8 : ajout des tests API TA-001 à TA-010 et de la recette client.
 2026-10-06 E8 : tests d'intégration réels avec Vitest/Supertest et MySQL seedé.
+2026-10-07 E3/E8 : TA-004 vérifie que la chambre 4 redevient disponible après
+sa réservation confirmée ; 51 tests réussis.
+2026-10-07 E8/E9 : résultats de TA-001 à TA-010 consignés dans docs/recette.md ;
+modules de routes, middlewares, schémas et Prisma vérifiés.
