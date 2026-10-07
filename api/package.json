@@ -12,7 +12,7 @@
     "check": "node --check src/app.js && node --check src/server.js && node --check src/openapi.js && node --check prisma/seed.js",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage --coverage.include=src/app.js",
+    "test:coverage": "vitest run --coverage",
     "db:seed": "prisma db seed"
   },
   "keywords": [],

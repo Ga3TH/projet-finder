@@ -1,6 +1,9 @@
 export default {
- test: {
-        globals: true,
-        environment: 'node'
-    }
+  test: {
+    globals: true,
+    environment: "node",
+    coverage: {
+      reporter: ["text", "text-summary"],
+    },
+  },
 };
