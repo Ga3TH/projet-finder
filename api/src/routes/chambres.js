@@ -5,6 +5,35 @@ import { schemaChambre, schemaUpdateChambre } from "../schemas.js";
 
 const router = Router();
 
+/**
+ * @openapi
+ * /chambres:
+ *   post:
+ *     tags: [Chambres]
+ *     summary: Créer une chambre dans l'hôtel de l'hôtelier connecté
+ *     operationId: creerChambre
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/ChambreCreation'
+ *     responses:
+ *       '201':
+ *         description: Chambre créée.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Chambre'
+ *       '400':
+ *         $ref: '#/components/responses/Erreur400'
+ *       '401':
+ *         $ref: '#/components/responses/Erreur401'
+ *       '403':
+ *         $ref: '#/components/responses/Erreur403'
+ */
 router.post(
   "/chambres",
   authentifier,
@@ -39,6 +68,45 @@ router.post(
   },
 );
 
+/**
+ * @openapi
+ * /chambres/{id}:
+ *   patch:
+ *     tags: [Chambres]
+ *     summary: Modifier une chambre de l'hôtel de l'hôtelier connecté
+ *     operationId: modifierChambre
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: Identifiant numérique de la chambre.
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/ChambreModification'
+ *     responses:
+ *       '200':
+ *         description: Chambre modifiée.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Chambre'
+ *       '400':
+ *         $ref: '#/components/responses/Erreur400'
+ *       '401':
+ *         $ref: '#/components/responses/Erreur401'
+ *       '403':
+ *         $ref: '#/components/responses/Erreur403'
+ *       '404':
+ *         $ref: '#/components/responses/Erreur404'
+ */
 router.patch(
   "/chambres/:id",
   authentifier,
@@ -85,6 +153,42 @@ router.patch(
   },
 );
 
+/**
+ * @openapi
+ * /chambres/{id}:
+ *   delete:
+ *     tags: [Chambres]
+ *     summary: Supprimer une chambre de l'hôtel de l'hôtelier connecté
+ *     description: Une chambre ayant des réservations ne peut pas être supprimée.
+ *     operationId: supprimerChambre
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: Identifiant numérique de la chambre.
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *     responses:
+ *       '200':
+ *         description: Chambre supprimée.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Chambre'
+ *       '400':
+ *         $ref: '#/components/responses/Erreur400'
+ *       '401':
+ *         $ref: '#/components/responses/Erreur401'
+ *       '403':
+ *         $ref: '#/components/responses/Erreur403'
+ *       '404':
+ *         $ref: '#/components/responses/Erreur404'
+ *       '409':
+ *         $ref: '#/components/responses/Erreur409'
+ */
 router.delete(
   "/chambres/:id",
   authentifier,

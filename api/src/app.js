@@ -49,7 +49,10 @@ const swaggerSpec = swaggerJsdoc({
       },
     },
   },
-  apis: [path.join(path.dirname(fileURLToPath(import.meta.url)), "openapi.js")],
+  apis: [
+    path.join(path.dirname(fileURLToPath(import.meta.url)), "openapi.js"),
+    path.join(path.dirname(fileURLToPath(import.meta.url)), "routes", "*.js").replaceAll("\\", "/"),
+  ],
 });
 
 app.get("/docs/openapi.json", (req, res) => res.json(swaggerSpec));

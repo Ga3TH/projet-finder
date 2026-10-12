@@ -12,6 +12,36 @@ import {
 const router = Router();
 const JWT_SECRET = process.env.JWT_SECRET ?? "dev-secret";
 
+/**
+ * @openapi
+ * /auth/register:
+ *   post:
+ *     tags: [Authentification]
+ *     summary: Créer un compte
+ *     description: Le rôle est facultatif et vaut voyageur par défaut.
+ *     operationId: inscrireCompte
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Inscription'
+ *     responses:
+ *       '201':
+ *         description: Compte créé ; le mot de passe n'est pas renvoyé.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ReponseInscription'
+ *       '400':
+ *         $ref: '#/components/responses/Erreur400'
+ *       '409':
+ *         description: Cette adresse e-mail est déjà utilisée.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Erreur'
+ */
 router.post("/auth/register", validerSchema(schemaRegister), async (req, res) => {
   const { email, motDePasse, nom, prenom, role, hotelId, telephone } = req.body;
   const emailFinal = String(email ?? "").trim().toLowerCase();
@@ -46,6 +76,31 @@ router.post("/auth/register", validerSchema(schemaRegister), async (req, res) =>
   });
 });
 
+/**
+ * @openapi
+ * /auth/login:
+ *   post:
+ *     tags: [Authentification]
+ *     summary: Se connecter et obtenir un JWT
+ *     operationId: connecterCompte
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Connexion'
+ *     responses:
+ *       '200':
+ *         description: Connexion réussie ; le jeton est valable 24 heures.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ReponseConnexion'
+ *       '400':
+ *         $ref: '#/components/responses/Erreur400'
+ *       '401':
+ *         $ref: '#/components/responses/Erreur401'
+ */
 router.post("/auth/login", validerSchema(schemaLogin), async (req, res) => {
   const { email, motDePasse } = req.body;
   const emailFinal = String(email ?? "").trim().toLowerCase();
@@ -85,6 +140,27 @@ router.post("/auth/login", validerSchema(schemaLogin), async (req, res) => {
   });
 });
 
+/**
+ * @openapi
+ * /me:
+ *   get:
+ *     tags: [Profil]
+ *     summary: Consulter le compte connecté
+ *     operationId: obtenirMonCompte
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       '200':
+ *         description: Profil du compte connecté.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Profil'
+ *       '401':
+ *         $ref: '#/components/responses/Erreur401'
+ *       '404':
+ *         $ref: '#/components/responses/Erreur404'
+ */
 router.get("/me", authentifier, async (req, res) => {
   const compte = await prisma.comptes.findUnique({
     where: { id: Number(req.user.id) },
@@ -104,6 +180,29 @@ router.get("/me", authentifier, async (req, res) => {
   });
 });
 
+/**
+ * @openapi
+ * /voyageurs/me:
+ *   get:
+ *     tags: [Voyageurs]
+ *     summary: Consulter son profil voyageur
+ *     operationId: obtenirProfilVoyageur
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       '200':
+ *         description: Profil du voyageur connecté.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Profil'
+ *       '401':
+ *         $ref: '#/components/responses/Erreur401'
+ *       '403':
+ *         $ref: '#/components/responses/Erreur403'
+ *       '404':
+ *         $ref: '#/components/responses/Erreur404'
+ */
 router.get("/voyageurs/me", authentifier, exigeRole("voyageur"), async (req, res) => {
   const compte = await prisma.comptes.findUnique({
     where: { id: Number(req.user.id) },
@@ -123,6 +222,35 @@ router.get("/voyageurs/me", authentifier, exigeRole("voyageur"), async (req, res
   });
 });
 
+/**
+ * @openapi
+ * /voyageurs/me:
+ *   patch:
+ *     tags: [Voyageurs]
+ *     summary: Modifier son profil voyageur
+ *     operationId: modifierProfilVoyageur
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/ModificationProfilVoyageur'
+ *     responses:
+ *       '200':
+ *         description: Profil mis à jour.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Profil'
+ *       '400':
+ *         $ref: '#/components/responses/Erreur400'
+ *       '401':
+ *         $ref: '#/components/responses/Erreur401'
+ *       '403':
+ *         $ref: '#/components/responses/Erreur403'
+ */
 router.patch(
   "/voyageurs/me",
   authentifier,

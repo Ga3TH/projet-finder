@@ -10,6 +10,29 @@ import { schemaReservation, schemaUpdateReservation } from "../schemas.js";
 
 const router = Router();
 
+/**
+ * @openapi
+ * /reservations/mine:
+ *   get:
+ *     tags: [Réservations]
+ *     summary: Lister les réservations du voyageur connecté
+ *     operationId: listerMesReservations
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       '200':
+ *         description: Réservations du voyageur connecté.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Reservation'
+ *       '401':
+ *         $ref: '#/components/responses/Erreur401'
+ *       '403':
+ *         $ref: '#/components/responses/Erreur403'
+ */
 router.get("/reservations/mine", authentifier, exigeRole("voyageur"), async (req, res) => {
   const reservations = await prisma.reservations.findMany({
     where: { compteId: Number(req.user.id) },
@@ -18,6 +41,29 @@ router.get("/reservations/mine", authentifier, exigeRole("voyageur"), async (req
   return res.json(reservations);
 });
 
+/**
+ * @openapi
+ * /reservations/received:
+ *   get:
+ *     tags: [Réservations]
+ *     summary: Lister les réservations reçues par l'hôtelier connecté
+ *     operationId: listerReservationsRecues
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       '200':
+ *         description: Réservations des chambres de l'hôtel de l'hôtelier.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Reservation'
+ *       '401':
+ *         $ref: '#/components/responses/Erreur401'
+ *       '403':
+ *         $ref: '#/components/responses/Erreur403'
+ */
 router.get(
   "/reservations/received",
   authentifier,
@@ -35,6 +81,38 @@ router.get(
   },
 );
 
+/**
+ * @openapi
+ * /reservations:
+ *   post:
+ *     tags: [Réservations]
+ *     summary: Réserver une chambre
+ *     description: Le statut initial de la réservation est en_attente.
+ *     operationId: creerReservation
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/ReservationCreation'
+ *     responses:
+ *       '201':
+ *         description: Réservation créée.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Reservation'
+ *       '400':
+ *         $ref: '#/components/responses/Erreur400'
+ *       '401':
+ *         $ref: '#/components/responses/Erreur401'
+ *       '403':
+ *         $ref: '#/components/responses/Erreur403'
+ *       '404':
+ *         $ref: '#/components/responses/Erreur404'
+ */
 router.post(
   "/reservations",
   authentifier,
@@ -77,6 +155,47 @@ router.post(
   },
 );
 
+/**
+ * @openapi
+ * /reservations/{id}:
+ *   patch:
+ *     tags: [Réservations]
+ *     summary: Accepter ou refuser une réservation de son hôtel
+ *     operationId: modifierStatutReservation
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: Identifiant numérique de la réservation.
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/ReservationModification'
+ *     responses:
+ *       '200':
+ *         description: Statut de la réservation modifié.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Reservation'
+ *       '400':
+ *         $ref: '#/components/responses/Erreur400'
+ *       '401':
+ *         $ref: '#/components/responses/Erreur401'
+ *       '403':
+ *         $ref: '#/components/responses/Erreur403'
+ *       '404':
+ *         $ref: '#/components/responses/Erreur404'
+ *       '409':
+ *         $ref: '#/components/responses/Erreur409'
+ */
 router.patch(
   "/reservations/:id",
   authentifier,
@@ -121,6 +240,41 @@ router.patch(
   },
 );
 
+/**
+ * @openapi
+ * /reservations/{id}:
+ *   delete:
+ *     tags: [Réservations]
+ *     summary: Annuler sa réservation
+ *     operationId: annulerReservation
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: Identifiant numérique de la réservation.
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *     responses:
+ *       '200':
+ *         description: Réservation annulée.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Reservation'
+ *       '400':
+ *         $ref: '#/components/responses/Erreur400'
+ *       '401':
+ *         $ref: '#/components/responses/Erreur401'
+ *       '403':
+ *         $ref: '#/components/responses/Erreur403'
+ *       '404':
+ *         $ref: '#/components/responses/Erreur404'
+ *       '409':
+ *         $ref: '#/components/responses/Erreur409'
+ */
 router.delete(
   "/reservations/:id",
   authentifier,
