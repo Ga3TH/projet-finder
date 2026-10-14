@@ -32,23 +32,24 @@ n'est pas commité
 poser de question
 [✔] GET /chambres?prix_max=89 -> 200, 12 chambres ; sans
 critère, 32
+
 ## Étapes 2 à 9
 
-[x] E2 Base MySQL via Prisma : schéma, migration, seed du kit -> tables
+[✔] E2 Base MySQL via Prisma : schéma, migration, seed du kit -> tables
 visibles dans Adminer
-[x] E3 Recherche de chambres disponibles -> GET
+[✔] E3 Recherche de chambres disponibles -> GET
 /chambres?... filtre ; TA-004 retire la chambre 4 pendant la réservation confirmée
-[x] E4 Inscription, connexion JWT 24 h, écritures protégées -> sans
+[✔] E4 Inscription, connexion JWT 24 h, écritures protégées -> sans
 jeton 401, mauvais rôle 403
-[x] E5 Validation Zod [ACCEPTABLE] -> corps
+[✔] E5 Validation Zod [ACCEPTABLE] -> corps
 invalide 400, jamais 500
-[x] E6 Réservations et statuts ->
+[✔] E6 Réservations et statuts ->
 en_attente, confirmee, refusee, annulee
-[x] E7 Documentation Swagger de toutes les routes -> /docs
+[✔] E7 Documentation Swagger de toutes les routes -> /docs
 les affiche toutes
-[x] E8 Tests et recette -> npm test passe, TA-001 à TA-010 consignés
+[✔] E8 Tests et recette -> npm test passe, TA-001 à TA-010 consignés
 dans docs/recette.md
-[x] E9 API répartie en modules -> client Prisma, middlewares, schémas et
+[✔] E9 API répartie en modules -> client Prisma, middlewares, schémas et
 routeurs séparés ; app.js branche les routeurs
 
 ## Gardes
