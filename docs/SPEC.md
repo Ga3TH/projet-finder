@@ -72,3 +72,14 @@ assez grand pour trancher
 sa réservation confirmée ; 51 tests réussis.
 2026-10-07 E8/E9 : résultats de TA-001 à TA-010 consignés dans docs/recette.md ;
 modules de routes, middlewares, schémas et Prisma vérifiés.
+
+## Sprint 2 - Frontend
+
+[ ] E1 Socle frontend : React/Vite démarre depuis `front/` ; l'adresse de l'API est centralisée dans `src/config.js`.
+[ ] E2 Recherche : les filtres interrogent `GET /chambres` et les résultats montrent la chambre et son hôtel.
+[ ] E3 Authentification : inscription et connexion utilisent les routes de l'API et affichent les erreurs prévues.
+[ ] E4 Réservation : un voyageur connecté peut réserver une chambre disponible et voir le statut de sa demande.
+[ ] E5 Espace hôtelier : un hôtelier peut gérer ses chambres et traiter les demandes liées à son hôtel.
+[ ] E6 Finition : les parcours principaux sont vérifiés sur ordinateur et mobile, avec leurs états de chargement, vide et erreur documentés.
+
+2026-11-02 Sprint 2, étape 1 : séparation du frontend et de l'API décidée dans ADR 0001.

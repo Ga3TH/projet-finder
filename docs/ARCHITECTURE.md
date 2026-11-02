@@ -19,7 +19,7 @@ projet-finder/
 │   └── README.md
 ├── docs/
 │   ├── ARCHITECTURE.md
-│   ├── SPEC.md
+│   ├── spec.md
 │   └── rgpd/
 ├── front/                  # espace prévu pour le futur front
 └── script/                 # scripts utilitaires
