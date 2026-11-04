@@ -1,17 +1,14 @@
-function FicheHotel({ hotel }) {
+function FicheHotel({ hotel, children }) {
   return (
-    <article>
+    <>
       <h1>{hotel.nom}</h1>
-      <p aria-label={`${hotel.etoiles} étoiles`}>
-        {'★'.repeat(hotel.etoiles)}
+      <p>{hotel.adresse}</p>
+      <p>
+        {hotel.codePostal} {hotel.ville}
       </p>
-      <address>
-        {hotel.adresse}
-        <br />
-        {hotel.code_postal} {hotel.ville}
-      </address>
       <p>{hotel.description}</p>
-    </article>
+      {children}
+    </>
   )
 }
 
