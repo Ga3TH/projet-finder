@@ -1,136 +1,178 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { API } from './config.js'
 import FicheChambre from './composants/FicheChambre.jsx'
 import FicheHotel from './composants/FicheHotel.jsx'
+import FormulaireRecherche from './composants/FormulaireRecherche.jsx'
 import ListeChambres from './composants/ListeChambres.jsx'
 
-const hotel = {
-  id: 1,
-  nom: 'Amor',
-  adresse: '14 quai des Pêcheurs',
-  codePostal: '17000',
-  ville: 'La Rochelle',
-  description:
-    'Hôtel de charme sur le vieux port, 12 chambres, petit-déjeuner maison, vélos prêtés aux clients.',
+const criteresInitiaux = {
+  hotel: '',
+  date_debut: '',
+  date_fin: '',
+  capacite: '',
+  prix_max: '',
+  categorie: '',
 }
 
-const chambres = [
-  {
-    id: 1,
-    hotelId: 1,
-    numero: 101,
-    categorie: 'simple',
-    capacite: 1,
-    prixNuit: 69,
-  },
-  {
-    id: 2,
-    hotelId: 1,
-    numero: 102,
-    categorie: 'simple',
-    capacite: 1,
-    prixNuit: 69,
-  },
-  {
-    id: 3,
-    hotelId: 1,
-    numero: 103,
-    categorie: 'simple',
-    capacite: 1,
-    prixNuit: 69,
-  },
-  {
-    id: 4,
-    hotelId: 1,
-    numero: 104,
-    categorie: 'double',
-    capacite: 2,
-    prixNuit: 95,
-  },
-  {
-    id: 5,
-    hotelId: 1,
-    numero: 105,
-    categorie: 'double',
-    capacite: 2,
-    prixNuit: 95,
-  },
-  {
-    id: 6,
-    hotelId: 1,
-    numero: 206,
-    categorie: 'double',
-    capacite: 2,
-    prixNuit: 95,
-  },
-  {
-    id: 7,
-    hotelId: 1,
-    numero: 207,
-    categorie: 'double',
-    capacite: 2,
-    prixNuit: 95,
-  },
-  {
-    id: 8,
-    hotelId: 1,
-    numero: 208,
-    categorie: 'double',
-    capacite: 2,
-    prixNuit: 95,
-  },
-  {
-    id: 9,
-    hotelId: 1,
-    numero: 209,
-    categorie: 'double',
-    capacite: 2,
-    prixNuit: 95,
-  },
-  {
-    id: 10,
-    hotelId: 1,
-    numero: 210,
-    categorie: 'familiale',
-    capacite: 4,
-    prixNuit: 149,
-  },
-  {
-    id: 11,
-    hotelId: 1,
-    numero: 211,
-    categorie: 'familiale',
-    capacite: 4,
-    prixNuit: 149,
-  },
-  {
-    id: 12,
-    hotelId: 1,
-    numero: 212,
-    categorie: 'suite',
-    capacite: 2,
-    prixNuit: 189,
-  },
-]
-
 function App() {
-  const [chambreSelectionneeId, setChambreSelectionneeId] = useState(
-    chambres[0]?.id ?? null,
-  )
+  const [criteres, setCriteres] = useState(criteresInitiaux)
+  const [criteresValides, setCriteresValides] = useState(criteresInitiaux)
+  const [versionRecherche, setVersionRecherche] = useState(0)
+  const [chambres, setChambres] = useState([])
+  const [hotelCible, setHotelCible] = useState(null)
+  const [chambreSelectionneeId, setChambreSelectionneeId] = useState(null)
+  const [chargement, setChargement] = useState(true)
+  const [erreur, setErreur] = useState(null)
+  const [erreurFormulaire, setErreurFormulaire] = useState(null)
+
+  useEffect(() => {
+    const controller = new AbortController()
+
+    async function rechercher() {
+      setChargement(true)
+      setErreur(null)
+      setChambres([])
+      setHotelCible(null)
+      setChambreSelectionneeId(null)
+
+      try {
+        const parametres = new URLSearchParams()
+        for (const [cle, valeur] of Object.entries(criteresValides)) {
+          if (valeur !== '') {
+            parametres.set(cle, valeur)
+          }
+        }
+
+        const suffixe = parametres.size > 0 ? `?${parametres}` : ''
+        const reponseChambres = await fetch(`${API}/chambres${suffixe}`, {
+          signal: controller.signal,
+        })
+        if (!reponseChambres.ok) {
+          let corps
+          try {
+            corps = await reponseChambres.json()
+          } catch {
+            corps = null
+          }
+          throw new Error(
+            corps?.erreur ??
+              `La recherche a échoué (HTTP ${reponseChambres.status}).`,
+          )
+        }
+
+        const resultats = await reponseChambres.json()
+        if (!Array.isArray(resultats)) {
+          throw new Error("La réponse de l'API n'est pas une liste de chambres.")
+        }
+
+        let hotelTrouve = null
+        const rechercheHotel = criteresValides.hotel.trim()
+        if (rechercheHotel !== '') {
+          const reponseHotels = await fetch(`${API}/hotels`, {
+            signal: controller.signal,
+          })
+          if (!reponseHotels.ok) {
+            throw new Error(
+              `Impossible de charger les hôtels (HTTP ${reponseHotels.status}).`,
+            )
+          }
+          const hotels = await reponseHotels.json()
+          if (!Array.isArray(hotels)) {
+            throw new Error("La réponse de l'API n'est pas une liste d'hôtels.")
+          }
+          const rechercheNormalisee = rechercheHotel.toLocaleLowerCase()
+          hotelTrouve =
+            hotels.find((hotel) => String(hotel.id) === rechercheHotel) ??
+            hotels.find((hotel) =>
+              hotel.nom.toLocaleLowerCase().includes(rechercheNormalisee),
+            ) ??
+            null
+        }
+
+        if (!controller.signal.aborted) {
+          setChambres(resultats)
+          setHotelCible(hotelTrouve)
+        }
+      } catch (cause) {
+        if (!controller.signal.aborted) {
+          setErreur(
+            cause instanceof TypeError
+              ? `Impossible de joindre l’API à ${API}. Vérifiez que le serveur fonctionne et que l’origine du front est autorisée.`
+              : cause instanceof Error
+                ? cause.message
+                : "Une erreur inattendue empêche la recherche.",
+          )
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setChargement(false)
+        }
+      }
+    }
+
+    rechercher()
+    return () => controller.abort()
+  }, [criteresValides, versionRecherche])
+
+  function rechercherAvecCriteres(event) {
+    event.preventDefault()
+    setErreurFormulaire(null)
+
+    if (Boolean(criteres.date_debut) !== Boolean(criteres.date_fin)) {
+      setErreurFormulaire("Renseignez les deux dates ou laissez-les vides.")
+      return
+    }
+    if (criteres.date_debut && criteres.date_debut >= criteres.date_fin) {
+      setErreurFormulaire("La date d’arrivée doit précéder la date de départ.")
+      return
+    }
+
+    setCriteresValides({ ...criteres })
+    setVersionRecherche((version) => version + 1)
+  }
+
   const chambreSelectionnee = chambres.find(
     (chambre) => chambre.id === chambreSelectionneeId,
   )
 
   return (
-    <FicheHotel hotel={hotel}>
-      <ListeChambres
-        chambres={chambres}
-        chambreSelectionneeId={chambreSelectionneeId}
-        onSelectionner={setChambreSelectionneeId}
+    <main>
+      <h1>Rechercher une chambre</h1>
+      <FormulaireRecherche
+        criteres={criteres}
+        onChanger={setCriteres}
+        onRechercher={rechercherAvecCriteres}
       />
-      {chambreSelectionnee && (
-        <FicheChambre chambre={chambreSelectionnee} hotel={hotel} />
+      {erreurFormulaire && <p role="alert">{erreurFormulaire}</p>}
+      {chargement && <p role="status">Chargement des chambres…</p>}
+      {!chargement && erreur && <p role="alert">{erreur}</p>}
+      {!chargement &&
+        !erreur &&
+        criteresValides.hotel.trim() !== '' &&
+        (hotelCible ? (
+          <FicheHotel hotel={hotelCible} />
+        ) : (
+          <p role="status">
+            Aucun hôtel ne correspond à « {criteresValides.hotel} ».
+          </p>
+        ))}
+      {!chargement && !erreur && (
+        <>
+          <ListeChambres
+            chambres={chambres}
+            chambreSelectionneeId={chambreSelectionneeId}
+            onSelectionner={setChambreSelectionneeId}
+          />
+          {chambreSelectionnee && (
+            <FicheChambre
+              chambre={chambreSelectionnee}
+              hotel={chambreSelectionnee.hotel}
+              onFermer={() => setChambreSelectionneeId(null)}
+            />
+          )}
+        </>
       )}
-    </FicheHotel>
+    </main>
   )
 }
 

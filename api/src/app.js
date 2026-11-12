@@ -1,5 +1,6 @@
 import "dotenv/config";
 import express from "express";
+import cors from "cors";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import swaggerJsdoc from "swagger-jsdoc";
@@ -17,6 +18,11 @@ const app = express();
 const PORT = process.env.PORT ?? 3000;
 
 app.use(express.json());
+app.use(
+  cors({
+    origin: process.env.FRONTEND_ORIGIN ?? "http://localhost:5173",
+  }),
+);
 
 const swaggerSpec = swaggerJsdoc({
   definition: {

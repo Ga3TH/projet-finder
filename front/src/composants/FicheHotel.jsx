@@ -1,7 +1,7 @@
 function FicheHotel({ hotel, children }) {
   return (
     <>
-      <h1>{hotel.nom}</h1>
+      <h2>{hotel.nom}</h2>
       <p>{hotel.adresse}</p>
       <p>
         {hotel.codePostal} {hotel.ville}
