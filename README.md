@@ -1,8 +1,11 @@
 # Finder
 
-API de réservation de chambres d'hôtel pour les hôtels Amor, Byzance et
-Caraïbes. Le serveur Express et la base de données Prisma se trouvent dans
-`api`. Swagger permet de consulter et d'essayer les routes de l'API.
+Application de réservation de chambres d'hôtel pour les hôtels Amor, Byzance
+et Caraïbes. Le projet contient deux applications qui se démarrent séparément :
+
+- **`api/`** — API Express et base de données MySQL gérée avec Prisma
+  (Sprint 1). Swagger permet de consulter et d'essayer les routes.
+- **`front/`** — interface React construite avec Vite (Sprint 2, en cours).
 
 > **Ce guide est prévu pour Windows et PowerShell.** Les exemples MySQL
 > supposent une installation locale Laragon avec l'utilisateur `root` sans mot
@@ -12,14 +15,17 @@ Caraïbes. Le serveur Express et la base de données Prisma se trouvent dans
 
 1. [Installer les outils](#1-installer-les-outils)
 2. [Télécharger le projet](#2-télécharger-le-projet)
-3. [Installer les dépendances](#3-installer-les-dépendances)
+3. [Installer les dépendances de l'API](#3-installer-les-dépendances-de-lapi)
 4. [Créer la base MySQL](#4-créer-la-base-mysql)
 5. [Configurer la connexion](#5-configurer-la-connexion)
 6. [Créer les tables et charger les données](#6-créer-les-tables-et-charger-les-données)
 7. [Lancer les tests](#7-lancer-les-tests)
 8. [Démarrer l'API](#8-démarrer-lapi)
 9. [Essayer une route protégée](#9-essayer-une-route-protégée)
-10. [Résoudre les problèmes courants](#résoudre-les-problèmes-courants)
+10. [Démarrer l'interface](#10-démarrer-linterface)
+11. [Commandes utiles](#commandes-utiles)
+12. [Résoudre les problèmes courants](#résoudre-les-problèmes-courants)
+13. [Structure du projet](#structure-du-projet)
 
 ## 1. Installer les outils
 
@@ -53,7 +59,7 @@ git clone https://github.com/Ga3TH/projet-finder.git
 Set-Location "$HOME\source\projet-finder\api"
 ```
 
-Les commandes `npm` et Prisma de ce guide doivent être exécutées depuis le
+Les commandes `npm` et Prisma des étapes 3 à 9 doivent être exécutées depuis le
 dossier `api`. Pour confirmer le dossier courant :
 
 ```powershell
@@ -62,7 +68,7 @@ Get-Location
 
 Le chemin doit se terminer par `projet-finder\api`.
 
-## 3. Installer les dépendances
+## 3. Installer les dépendances de l'API
 
 Depuis `api`, installe les dépendances exactes du projet :
 
@@ -96,13 +102,17 @@ Pour une installation Laragon avec `root` sans mot de passe, configure ces
 valeurs dans `api/.env` :
 
 ```dotenv
-PORT=3300
+PORT=3000
 DATABASE_URL="mysql://root@127.0.0.1:3306/finder_local"
 JWT_SECRET="cle-secrete-locale-a-remplacer"
 ```
 
-Adapte l'utilisateur, le mot de passe, le port ou le nom de la base si MySQL
-est configuré autrement. Par exemple, avec un mot de passe :
+Garde `PORT=3000` : c'est le port que l'interface utilise pour joindre l'API
+(voir [`front/src/config.js`](front/src/config.js)). Si tu changes de port,
+modifie aussi ce fichier.
+
+Adapte l'utilisateur, le mot de passe, le port MySQL ou le nom de la base si
+MySQL est configuré autrement. Par exemple, avec un mot de passe :
 
 ```dotenv
 DATABASE_URL="mysql://root:mot-de-passe@127.0.0.1:3306/finder_local"
@@ -132,8 +142,8 @@ chambres, comptes et réservations de démonstration.
 
 ## 7. Lancer les tests
 
-Les tests utilisent MySQL et les données de démonstration chargées à l'étape
-précédente. Depuis `api`, lance :
+Les tests de l'API utilisent MySQL et les données de démonstration chargées à
+l'étape précédente. Depuis `api`, lance :
 
 ```powershell
 npm test
@@ -154,19 +164,19 @@ Depuis `api`, démarre le serveur :
 npm run dev
 ```
 
-Garde ce terminal ouvert. Le serveur affiche une adresse semblable à :
+Garde ce terminal ouvert. Le serveur affiche :
 
 ```text
-API sur http://localhost:3300
+API sur http://localhost:3000
 ```
 
 Ouvre ensuite :
 
-- [http://localhost:3300/health](http://localhost:3300/health) — vérification
+- [http://localhost:3000/health](http://localhost:3000/health) — vérification
   rapide, réponse attendue : `{"statut":"ok"}`
-- [http://localhost:3300/docs](http://localhost:3300/docs) — documentation
+- [http://localhost:3000/docs](http://localhost:3000/docs) — documentation
   interactive Swagger
-- [http://localhost:3300/docs/openapi.json](http://localhost:3300/docs/openapi.json)
+- [http://localhost:3000/docs/openapi.json](http://localhost:3000/docs/openapi.json)
   — spécification OpenAPI
 
 Pour arrêter le serveur, reviens au terminal et appuie sur **Ctrl+C**.
@@ -187,17 +197,55 @@ Dans Swagger :
 Ne préfixe pas le token avec `Bearer` dans la fenêtre **Authorize** : Swagger
 ajoute lui-même ce préfixe.
 
+## 10. Démarrer l'interface
+
+L'interface React se trouve dans `front/` et se démarre dans un **second
+terminal**, à côté de celui de l'API. Depuis la racine du dépôt :
+
+```powershell
+Set-Location "$HOME\source\projet-finder\front"
+npm ci
+npm run dev
+```
+
+Vite affiche l'adresse de l'interface :
+[http://localhost:5173](http://localhost:5173).
+
+État actuel (Sprint 2, étapes 1 et 2) : la page présente la fiche de l'hôtel
+Amor et la liste de ses 12 chambres. Clique sur une chambre (ou sélectionne-la
+au clavier avec **Entrée**) pour afficher sa fiche. Ces données sont pour
+l'instant écrites dans [`front/src/App.jsx`](front/src/App.jsx) : l'interface
+n'appelle pas encore l'API.
+
+L'adresse de l'API côté interface est centralisée dans
+[`front/src/config.js`](front/src/config.js). Le choix d'un frontend séparé
+de l'API est expliqué dans
+[`docs/decisions/0001-front-separe.md`](docs/decisions/0001-front-separe.md).
+
 ## Commandes utiles
 
-Toutes les commandes ci-dessous s'exécutent depuis le dossier `api` :
+Depuis le dossier `api` :
 
 | Commande | Utilité |
 | --- | --- |
 | `npm ci` | Installer les dépendances |
-| `npm run dev` | Démarrer l'API en développement |
+| `npm run dev` | Démarrer l'API en développement (redémarre à chaque modification) |
+| `npm start` | Démarrer l'API sans rechargement automatique |
+| `npm run db:seed` | Recharger les données de démonstration (vide les tables Finder) |
 | `npm run check` | Vérifier la syntaxe JavaScript |
 | `npm test` | Lancer les tests |
+| `npm run test:watch` | Relancer les tests à chaque modification |
 | `npm run test:coverage` | Lancer les tests avec le rapport de couverture |
+
+Depuis le dossier `front` :
+
+| Commande | Utilité |
+| --- | --- |
+| `npm ci` | Installer les dépendances |
+| `npm run dev` | Démarrer l'interface en développement |
+| `npm run build` | Construire la version de production dans `front/dist` |
+| `npm run preview` | Prévisualiser la version construite |
+| `npm run lint` | Vérifier le code avec oxlint |
 
 ## Résoudre les problèmes courants
 
@@ -229,7 +277,7 @@ npx prisma generate
 npx prisma migrate deploy
 ```
 
-### Les hôtels ou les chambres ne s'affichent pas
+### Les hôtels ou les chambres ne s'affichent pas dans l'API
 
 Vérifie que `npm run db:seed` a été exécuté sur la base configurée dans
 `api/.env`.
@@ -239,14 +287,29 @@ Vérifie que `npm run db:seed` a été exécuté sur la base configurée dans
 Vérifie que le terminal du serveur est toujours ouvert. Si tu as modifié `PORT`
 dans `.env`, utilise ce port dans l'adresse du navigateur.
 
-### Le port 3300 est déjà utilisé
+### Le port 3000 est déjà utilisé
 
 Modifie `PORT` dans `api/.env`, redémarre l'API et utilise le nouveau port dans
-les adresses du navigateur.
+les adresses du navigateur. Mets aussi à jour
+[`front/src/config.js`](front/src/config.js) pour que l'interface vise le
+même port.
+
+### L'interface ne s'ouvre pas sur le port 5173
+
+Si le port est déjà pris, Vite en choisit un autre et l'affiche dans le
+terminal : utilise l'adresse indiquée.
 
 ## Structure du projet
 
-- `api/src/` — serveur Express, routes et middlewares
+- `api/src/` — serveur Express, routes (documentées pour Swagger) et
+  middlewares
 - `api/prisma/` — schéma, migrations et données initiales
 - `api/finder-data/` — données de démonstration
-- `docs/` — spécification et documentation du projet
+- `api/tests/` — tests de l'API (Vitest et Supertest)
+- `front/src/` — interface React : `App.jsx`, composants dans `composants/`
+  et adresse de l'API dans `config.js`
+- `docs/spec.md` — spécification et suivi des étapes
+- `docs/architecture.md` — architecture du projet
+- `docs/recette.md` — cahier de recette
+- `docs/decisions/` — décisions d'architecture
+- `docs/rgpd/` — documents RGPD
