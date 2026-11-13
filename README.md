@@ -25,11 +25,18 @@ n'importe quel poste Windows. Suis les sections dans l'ordre.
    - [7.2 Recherche dans le frontend](#72-recherche-dans-le-frontend)
    - [7.3 Routes protégées avec Swagger](#73-routes-protégées-avec-swagger)
 8. [Référence de l'API](#8-référence-de-lapi)
-9. [Base de données](#9-base-de-données)
-10. [Structure du projet](#10-structure-du-projet)
-11. [Commandes utiles](#11-commandes-utiles)
-12. [Problèmes courants](#12-problèmes-courants)
-13. [Documentation complémentaire](#13-documentation-complémentaire)
+9. [Référence du frontend](#9-référence-du-frontend)
+   - [9.1 Fonctionnement](#91-fonctionnement)
+   - [9.2 Composants](#92-composants)
+   - [9.3 Validation et messages](#93-validation-et-messages)
+   - [9.4 Configuration](#94-configuration)
+   - [9.5 Build et prévisualisation](#95-build-et-prévisualisation)
+   - [9.6 Faire évoluer le frontend](#96-faire-évoluer-le-frontend)
+10. [Base de données](#10-base-de-données)
+11. [Structure du projet](#11-structure-du-projet)
+12. [Commandes utiles](#12-commandes-utiles)
+13. [Problèmes courants](#13-problèmes-courants)
+14. [Documentation complémentaire](#14-documentation-complémentaire)
 
 ---
 
@@ -393,7 +400,114 @@ Exemple : <http://localhost:3000/chambres?hotel=Amor&prix_max=120>
 - toute erreur renvoie un JSON de la forme `{ "erreur": "..." }` ;
 - statuts de réservation : `en_attente`, `confirmee`, `refusee`, `annulee`.
 
-## 9. Base de données
+## 9. Référence du frontend
+
+Le frontend est une application React créée avec Vite, dans `front/`. Il ne
+contient aucune donnée : tout vient de l'API.
+
+État d'avancement (voir [docs/SPEC.md](docs/SPEC.md)) :
+
+| Étape du Sprint 2 | État |
+| --- | --- |
+| E1 Socle React/Vite, adresse de l'API centralisée | fait |
+| E2 Recherche de chambres avec filtres et fiches | fait |
+| E3 Inscription et connexion | à faire |
+
+### 9.1 Fonctionnement
+
+```text
+index.html ──► src/main.jsx ──► src/App.jsx
+                                   ├── FormulaireRecherche   (saisie des filtres)
+                                   ├── FicheHotel            (si un hôtel est recherché)
+                                   ├── ListeChambres         (résultats)
+                                   └── FicheChambre          (chambre sélectionnée)
+```
+
+`App.jsx` garde tout l'état de la page (critères saisis, résultats, chambre
+sélectionnée, chargement, erreurs) et le transmet aux composants par leurs
+props. À chaque recherche :
+
+1. les critères non vides deviennent des paramètres d'URL, par exemple
+   `GET /chambres?hotel=Amor&prix_max=120` ;
+2. si le champ **Hôtel** est rempli, `GET /hotels` est aussi appelé pour
+   afficher la fiche de l'hôtel trouvé (par identifiant ou par nom partiel) ;
+3. si une nouvelle recherche part avant la fin de la précédente, l'ancienne
+   est annulée (`AbortController`), donc les résultats ne se mélangent pas.
+
+Au chargement de la page, une recherche sans filtre affiche les 32 chambres.
+
+### 9.2 Composants
+
+Tous dans `front/src/composants/` :
+
+| Composant | Rôle | Props |
+| --- | --- | --- |
+| `FormulaireRecherche` | Champs Hôtel, Arrivée, Départ, Personnes, Prix max., Catégorie et bouton **Rechercher** | `criteres`, `onChanger`, `onRechercher` |
+| `ListeChambres` | Nombre de résultats et liste cliquable des chambres | `chambres`, `chambreSelectionneeId`, `onSelectionner` |
+| `FicheChambre` | Détail d'une chambre et bouton **Fermer** | `chambre`, `hotel`, `onFermer` |
+| `FicheHotel` | Nom, adresse, ville et description d'un hôtel | `hotel` |
+
+Les champs du formulaire portent les mêmes noms que les paramètres de l'API
+(`hotel`, `date_debut`, `date_fin`, `capacite`, `prix_max`, `categorie`) :
+voir les [filtres de `GET /chambres`](#8-référence-de-lapi).
+
+### 9.3 Validation et messages
+
+Avant d'envoyer la requête, le formulaire vérifie les dates :
+
+| Saisie | Message |
+| --- | --- |
+| Une seule date renseignée | *Renseignez les deux dates ou laissez-les vides.* |
+| Arrivée le même jour ou après le départ | *La date d'arrivée doit précéder la date de départ.* |
+
+Messages affichés ensuite :
+
+| Situation | Affichage |
+| --- | --- |
+| Requête en cours | *Chargement des chambres…* |
+| Aucun résultat | *Aucune chambre à afficher.* |
+| Hôtel recherché introuvable | *Aucun hôtel ne correspond à « … ».* |
+| L'API renvoie une erreur | le message `erreur` renvoyé par l'API |
+| API arrêtée ou bloquée par CORS | *Impossible de joindre l'API à http://localhost:3000…* |
+
+### 9.4 Configuration
+
+L'adresse de l'API est définie à un seul endroit,
+[front/src/config.js](front/src/config.js) :
+
+```js
+export const API = 'http://localhost:3000'
+```
+
+Si tu changes le port de l'API (`PORT` dans `api/.env`), change aussi cette
+ligne. Dans l'autre sens, l'API n'accepte qu'**une** origine de frontend :
+celle de `FRONTEND_ORIGIN` dans `api/.env`. Si le frontend tourne sur une
+autre adresse, mets-la dans `FRONTEND_ORIGIN` et redémarre l'API.
+
+### 9.5 Build et prévisualisation
+
+```powershell
+npm run build     # crée la version optimisée dans front/dist
+npm run preview   # sert front/dist sur http://localhost:4173
+```
+
+`npm run preview` utilise le port **4173**, pas 5173 : pour qu'il puisse
+appeler l'API, mets temporairement
+`FRONTEND_ORIGIN="http://localhost:4173"` dans `api/.env` et redémarre l'API
+(remets `5173` ensuite).
+
+### 9.6 Faire évoluer le frontend
+
+- un nouveau composant va dans `front/src/composants/`, un fichier par
+  composant, nommé en PascalCase (`FormulaireConnexion.jsx`) ;
+- les appels à l'API utilisent toujours `API` importé de `./config.js`, jamais
+  une adresse écrite en dur ;
+- les routes protégées (par exemple pour l'étape E3) attendent l'en-tête
+  `Authorization: Bearer <token>`, avec le `token` renvoyé par
+  `POST /auth/login` ;
+- lance `npm run lint` et `npm run build` avant de commiter.
+
+## 10. Base de données
 
 Schéma : [api/prisma/schema.prisma](api/prisma/schema.prisma).
 
@@ -409,7 +523,7 @@ sont chargées par [api/prisma/seed.js](api/prisma/seed.js).
 
 Pour explorer la base : HeidiSQL (Laragon) ou `npx prisma studio` depuis `api`.
 
-## 10. Structure du projet
+## 11. Structure du projet
 
 ```text
 projet-finder/
@@ -433,7 +547,7 @@ projet-finder/
 └── docs/                   spécification, architecture, recette, décisions
 ```
 
-## 11. Commandes utiles
+## 12. Commandes utiles
 
 | Dossier | Commande | Utilité |
 | --- | --- | --- |
@@ -450,7 +564,7 @@ projet-finder/
 | `front` | `npm run build` | Construire dans `front/dist` |
 | `front` | `npm run preview` | Prévisualiser le build |
 
-## 12. Problèmes courants
+## 13. Problèmes courants
 
 | Symptôme | Cause et solution |
 | --- | --- |
@@ -466,7 +580,7 @@ projet-finder/
 | `EADDRINUSE` (port déjà utilisé) | `Get-NetTCPConnection -LocalPort 3000 -State Listen` donne le `OwningProcess`, puis `Stop-Process -Id <numéro>`. |
 | Vite démarre sur un autre port que 5173 | Mets cette adresse dans `FRONTEND_ORIGIN` et redémarre l'API. |
 
-## 13. Documentation complémentaire
+## 14. Documentation complémentaire
 
 - [docs/SPEC.md](docs/SPEC.md) : spécification et avancement des sprints ;
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) : architecture de l'API ;
