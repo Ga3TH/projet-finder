@@ -1,80 +1,135 @@
 # Finder
 
-Application de réservation de chambres pour les hôtels Amor, Byzance et
-Caraïbes. Le dépôt contient deux applications à installer et lancer
-séparément :
+Application de réservation de chambres d'hôtel pour le groupement **Amor,
+Byzance et Caraïbes**, réalisée en BTS SIO.
 
-- `api/` : API Express, base MySQL et Prisma (port `3000`) ;
-- `front/` : interface React/Vite qui appelle l'API (port `5173`).
+Ce README suffit pour installer, lancer, tester et comprendre le projet sur
+n'importe quel poste Windows. Suis les sections dans l'ordre.
 
-Ce guide part d'un poste **Windows vierge** et va jusqu'à l'application qui
-tourne, testée et vérifiée. Les commandes sont à taper dans **PowerShell**.
-Les exemples utilisent MySQL local (Laragon) avec l'utilisateur `root` sans mot
-de passe ; adapte les valeurs si ton installation diffère.
+## Sommaire
 
-## Installation express
+1. [Présentation](#1-présentation)
+2. [Technologies](#2-technologies)
+3. [Installation rapide](#3-installation-rapide)
+4. [Installation pas à pas](#4-installation-pas-à-pas)
+   - [4.1 Prérequis](#41-prérequis)
+   - [4.2 Cloner le dépôt](#42-cloner-le-dépôt)
+   - [4.3 Installer les dépendances](#43-installer-les-dépendances)
+   - [4.4 Créer la base MySQL](#44-créer-la-base-mysql)
+   - [4.5 Configurer l'API](#45-configurer-lapi)
+   - [4.6 Créer les tables et charger les données](#46-créer-les-tables-et-charger-les-données)
+5. [Lancer l'application](#5-lancer-lapplication)
+6. [Tester le projet](#6-tester-le-projet)
+7. [Utiliser l'application](#7-utiliser-lapplication)
+   - [7.1 Comptes de démonstration](#71-comptes-de-démonstration)
+   - [7.2 Recherche dans le frontend](#72-recherche-dans-le-frontend)
+   - [7.3 Routes protégées avec Swagger](#73-routes-protégées-avec-swagger)
+8. [Référence de l'API](#8-référence-de-lapi)
+9. [Base de données](#9-base-de-données)
+10. [Structure du projet](#10-structure-du-projet)
+11. [Commandes utiles](#11-commandes-utiles)
+12. [Problèmes courants](#12-problèmes-courants)
+13. [Documentation complémentaire](#13-documentation-complémentaire)
 
-Si les prérequis (section 1) sont déjà en place et MySQL est démarré :
+---
+
+## 1. Présentation
+
+Finder permet de :
+
+- consulter les **3 hôtels** et leurs **32 chambres** ;
+- rechercher une chambre par hôtel, dates, nombre de personnes, prix maximal
+  et catégorie ;
+- créer un compte et se connecter (jeton JWT valable 24 h) ;
+- pour un **voyageur** : réserver une chambre, voir et annuler ses
+  réservations ;
+- pour un **hôtelier** : gérer les chambres de son hôtel, accepter ou refuser
+  les réservations reçues.
+
+Le dépôt contient **deux applications indépendantes**, à lancer chacune dans
+son terminal :
+
+```text
+Navigateur ──► front/ (React + Vite)  http://localhost:5173
+                   │  fetch
+                   ▼
+               api/  (Express)        http://localhost:3000
+                   │  Prisma
+                   ▼
+               MySQL (base finder_local, port 3306)
+```
+
+## 2. Technologies
+
+| Partie | Outils |
+| --- | --- |
+| API | Node.js, Express 5, Prisma 6, MySQL 8, JWT, bcrypt, Zod, Swagger |
+| Frontend | React 19, Vite 8, oxlint |
+| Tests | Vitest, Supertest (53 tests d'intégration) |
+
+## 3. Installation rapide
+
+Pour ceux qui ont déjà Node.js 24, Git et MySQL démarré (sinon passe à la
+[section 4](#4-installation-pas-à-pas)) :
 
 ```powershell
 git clone https://github.com/Ga3TH/projet-finder.git
 cd projet-finder\api
 npm ci
-Copy-Item .env.example .env          # puis vérifier DATABASE_URL et JWT_SECRET
+Copy-Item .env.example .env       # puis vérifier DATABASE_URL et JWT_SECRET
 npx prisma generate
-npx prisma migrate deploy            # la base finder_local doit exister
+npx prisma migrate deploy         # la base finder_local doit exister
 npm run db:seed
 npm test
 cd ..\front
 npm ci
 ```
 
-Lancement : `npm run dev` dans `api`, puis `npm run dev` dans `front` (deux
-terminaux), et ouvre <http://localhost:5173>. Le détail de chaque étape suit.
+Puis `npm run dev` dans `api`, `npm run dev` dans `front` (deux terminaux),
+et ouvre <http://localhost:5173>.
 
-## 1. Prérequis
+---
 
-### Logiciels
+## 4. Installation pas à pas
 
-| Logiciel | Version | Lien |
+Les commandes sont à taper dans **PowerShell**. Les exemples utilisent MySQL
+de Laragon avec l'utilisateur `root` sans mot de passe ; adapte-les si ton
+installation est différente.
+
+### 4.1 Prérequis
+
+| Logiciel | Version | Téléchargement |
 | --- | --- | --- |
-| Node.js (avec npm) | **24 LTS** recommandé (22.12 minimum) | <https://nodejs.org/> |
+| Node.js (inclut npm) | **24 LTS** recommandé, 22.12 minimum | <https://nodejs.org/> |
 | Git | récent | <https://git-scm.com/download/win> |
 | MySQL | 8 | inclus dans [Laragon](https://laragon.org/download/) (avec HeidiSQL) |
-
-Visual Studio Code est facultatif.
+| Éditeur | facultatif | [Visual Studio Code](https://code.visualstudio.com/) |
 
 > **Version de Node :** prends une version **paire** (22.12+, 24 ou 26).
-> Vitest refuse Node 23 et 25, et Vite demande au moins 22.12.
+> Vitest refuse Node 23 et 25.
 
-### Vérifier l'installation
-
-Après avoir installé Node.js et Git, **ferme et rouvre PowerShell** (sinon les
-nouvelles commandes ne sont pas trouvées), puis :
+Après l'installation, **ferme et rouvre PowerShell**, puis vérifie :
 
 ```powershell
-node --version    # v24.x attendu (ou v22.12+)
+node --version    # v24.x (ou v22.12+)
 npm --version
 git --version
 ```
 
-### Autoriser npm dans PowerShell
-
-Sur un poste neuf, PowerShell bloque souvent `npm` et `npx` avec une erreur
-du type *« l'exécution de scripts est désactivée sur ce système »*. Pour
-l'autoriser une fois pour toutes pour ton compte :
+**Autoriser npm dans PowerShell.** Sur un poste neuf, PowerShell bloque
+souvent `npm` et `npx` (*« l'exécution de scripts est désactivée sur ce
+système »*). Pour l'autoriser pour ton compte :
 
 ```powershell
 Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
 ```
 
-Sans droits suffisants, utilise plutôt `npm.cmd` et `npx.cmd` à la place de
-`npm` et `npx` dans toutes les commandes de ce guide.
+Si tu n'en as pas le droit, tape `npm.cmd` et `npx.cmd` à la place de `npm`
+et `npx` dans tout ce guide.
 
-## 2. Cloner le dépôt
+### 4.2 Cloner le dépôt
 
-Choisis un dossier de travail (ici `C:\dev`, n'importe quel dossier convient),
-puis clone le dépôt :
+Choisis un dossier de travail (ici `C:\dev`, n'importe lequel convient) :
 
 ```powershell
 New-Item -ItemType Directory -Force C:\dev
@@ -83,13 +138,12 @@ git clone https://github.com/Ga3TH/projet-finder.git
 Set-Location projet-finder
 ```
 
-Dans la suite, **la racine du dépôt** désigne ce dossier `projet-finder`. Les
-dossiers `api` et `front` ont chacun leur propre `package.json` : il n'y a
-**rien à installer à la racine**.
+Dans la suite, **la racine** désigne ce dossier `projet-finder`.
 
-## 3. Installer les dépendances
+### 4.3 Installer les dépendances
 
-Depuis la racine du dépôt :
+`api` et `front` ont chacun leur `package.json` ; **il n'y a rien à installer
+à la racine**. Depuis la racine :
 
 ```powershell
 cd api
@@ -99,23 +153,21 @@ npm ci
 cd ..
 ```
 
-`npm ci` installe exactement les versions des fichiers `package-lock.json` :
-c'est ce qui garantit la même installation sur tous les postes.
+`npm ci` installe exactement les versions des `package-lock.json`, donc la
+même chose sur tous les postes.
 
-Pendant l'installation de l'API, ces messages sont **normaux** et ne bloquent
-rien :
+Ces messages pendant l'installation de l'API sont **normaux** :
 
-- `npm warn install-scripts ... @scarf/scarf` (statistique d'usage de Swagger,
-  volontairement non autorisée) ;
-- `npm audit` qui signale des vulnérabilités dans les dépendances de
-  développement. Ne lance **pas** `npm audit fix --force` : il change des
-  versions majeures et peut casser le projet.
+- `npm warn install-scripts ... @scarf/scarf` : statistique d'usage de
+  Swagger, volontairement non autorisée ;
+- `npm audit` qui signale des vulnérabilités : ne lance **pas**
+  `npm audit fix --force`, il change des versions majeures et casse le projet.
 
-## 4. Démarrer MySQL et créer la base
+### 4.4 Créer la base MySQL
 
 1. Ouvre Laragon et clique sur **Démarrer tout** (ou démarre seulement MySQL).
 2. Crée la base, au choix :
-   - dans **HeidiSQL** (bouton **Base de données** de Laragon), exécute :
+   - dans **HeidiSQL** (bouton **Base de données** de Laragon) :
 
      ```sql
      CREATE DATABASE IF NOT EXISTS finder_local
@@ -129,12 +181,11 @@ rien :
      mysql -u root -e "CREATE DATABASE IF NOT EXISTS finder_local CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
      ```
 
-Utilise une base dédiée au projet : le seed (section 6) et les tests écrivent
-dedans.
+Utilise une base dédiée au projet : le seed et les tests écrivent dedans.
 
-## 5. Configurer l'API
+### 4.5 Configurer l'API
 
-Crée le fichier `api/.env` à partir du modèle et ouvre-le :
+Crée `api/.env` à partir du modèle et ouvre-le :
 
 ```powershell
 cd api
@@ -142,7 +193,7 @@ Copy-Item .env.example .env
 notepad .env
 ```
 
-Contenu attendu pour MySQL local avec `root` sans mot de passe :
+Contenu pour MySQL local avec `root` sans mot de passe :
 
 ```dotenv
 PORT=3000
@@ -155,25 +206,24 @@ FRONTEND_ORIGIN="http://localhost:5173"
 | --- | --- |
 | `PORT` | Port de l'API. Garde `3000` : le frontend l'attend dans `front/src/config.js`. |
 | `DATABASE_URL` | Connexion MySQL : `mysql://utilisateur:motdepasse@hôte:port/base`. |
-| `JWT_SECRET` | Clé de signature des jetons de connexion. Obligatoire. |
-| `FRONTEND_ORIGIN` | Adresse du frontend autorisée par CORS (Vite : `http://localhost:5173`). |
+| `JWT_SECRET` | Clé qui signe les jetons de connexion. Obligatoire. |
+| `FRONTEND_ORIGIN` | Adresse du frontend autorisée par CORS. |
 
-Pour générer une clé `JWT_SECRET` aléatoire :
+Pour générer une `JWT_SECRET` aléatoire :
 
 ```powershell
 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
 
-Si MySQL a un mot de passe, ajoute-le dans l'URL :
-`mysql://root:motdepasse@127.0.0.1:3306/finder_local`. Les caractères
-spéciaux du mot de passe doivent être encodés (`@` → `%40`, `#` → `%23`,
-`:` → `%3A`).
+Si MySQL a un mot de passe :
+`mysql://root:motdepasse@127.0.0.1:3306/finder_local`. Encode les caractères
+spéciaux du mot de passe (`@` → `%40`, `#` → `%23`, `:` → `%3A`).
 
 `api/.env` est ignoré par Git : ne le commite jamais et ne le partage pas.
 
-## 6. Créer les tables et charger les données
+### 4.6 Créer les tables et charger les données
 
-MySQL doit être démarré et `api/.env` enregistré. Depuis `api` :
+MySQL démarré et `.env` enregistré, depuis `api` :
 
 ```powershell
 npx prisma generate
@@ -183,42 +233,19 @@ npm run db:seed
 
 | Commande | Effet | Résultat attendu |
 | --- | --- | --- |
-| `npx prisma generate` | Génère le client Prisma dans `node_modules` | `Generated Prisma Client` |
+| `npx prisma generate` | Génère le client Prisma | `Generated Prisma Client` |
 | `npx prisma migrate deploy` | Crée les tables (3 migrations) | `All migrations have been successfully applied.` |
 | `npm run db:seed` | Charge `api/finder-data/` | `3 hôtels, 32 chambres, 9 comptes, 8 réservations` |
 
-> **Attention :** le seed **vide puis recharge** les tables Finder de la base
-> configurée. Ne le lance que sur une base de développement.
+> **Attention :** le seed **vide puis recharge** les tables Finder. Relance-le
+> quand tu veux revenir aux données de départ, mais jamais sur une base qui
+> contient des données à garder.
 
-Le seed peut être relancé à tout moment pour revenir aux données de départ.
+---
 
-## 7. Vérifier l'installation
+## 5. Lancer l'application
 
-### API
-
-Depuis `api`, MySQL démarré et seed chargé :
-
-```powershell
-npm run check     # syntaxe JavaScript
-npm test          # 53 tests Vitest/Supertest
-```
-
-Tous les tests doivent passer. Ils utilisent la vraie base de `DATABASE_URL`
-avec les données du seed, et suppriment les comptes et réservations qu'ils
-créent. `npm run test:coverage` affiche en plus la couverture du code.
-
-### Frontend
-
-Depuis `front` :
-
-```powershell
-npm run lint      # aucune erreur attendue
-npm run build     # produit front/dist
-```
-
-## 8. Démarrer l'application
-
-Il faut **deux terminaux PowerShell** ouverts en même temps.
+Il faut **deux terminaux PowerShell** ouverts en même temps, et MySQL démarré.
 
 **Terminal 1 — API**, depuis `api` :
 
@@ -228,10 +255,11 @@ npm run dev
 
 Le terminal affiche `API sur http://localhost:3000`. Vérifie :
 
-- <http://localhost:3000/health> → `{"statut":"ok"}` ;
-- <http://localhost:3000/hotels> → la liste des 3 hôtels (prouve que la base
-  répond) ;
-- <http://localhost:3000/docs> → la documentation Swagger.
+| Adresse | Attendu |
+| --- | --- |
+| <http://localhost:3000/health> | `{"statut":"ok"}` (l'API tourne) |
+| <http://localhost:3000/hotels> | les 3 hôtels (la base répond) |
+| <http://localhost:3000/docs> | la documentation Swagger |
 
 **Terminal 2 — frontend**, depuis `front` :
 
@@ -240,136 +268,210 @@ npm run dev
 ```
 
 Ouvre l'adresse affichée par Vite, normalement <http://localhost:5173>.
-Pour arrêter un serveur, retourne dans son terminal et appuie sur **Ctrl+C**.
 
-Pour les fois suivantes, il suffit de démarrer MySQL (Laragon) puis de lancer
-les deux `npm run dev`.
+Pour arrêter un serveur : **Ctrl+C** dans son terminal. Les fois suivantes,
+il suffit de démarrer MySQL puis de relancer les deux `npm run dev`.
 
-## 9. Parcours de vérification de la recherche
+## 6. Tester le projet
 
-Avec MySQL, l'API et le frontend démarrés :
+**API**, depuis `api` (MySQL démarré, seed chargé) :
 
-1. À l'ouverture du frontend, le chargement se termine et les **32 chambres**
-   apparaissent.
-2. Renseigne `Amor` dans **Hôtel** et clique sur **Rechercher** : la fiche
-   Amor apparaît au-dessus des résultats, qui contiennent ses 12 chambres.
-3. Sélectionne une chambre : sa fiche affiche numéro, catégorie, capacité,
-   prix, description et hôtel. **Fermer** masque la fiche.
-4. Filtre par **Personnes = 4** et **Prix max. = 120** : seules les chambres
-   correspondantes s'affichent.
-5. Essaie un nom d'hôtel inconnu ou un filtre sans résultat : un message
-   explicite s'affiche, sans page blanche.
-6. Saisis une seule date, ou des dates dans le mauvais ordre : le formulaire
-   affiche une erreur et n'envoie pas de requête.
-7. Arrête l'API (Ctrl+C) et relance une recherche : un message indique que
-   l'API ne répond pas. Redémarre-la ensuite.
+```powershell
+npm run check          # syntaxe JavaScript
+npm test               # 53 tests Vitest/Supertest
+npm run test:coverage  # tests + couverture de code
+```
 
-Les filtres disponibles sont l'hôtel (nom ou identifiant), les dates d'arrivée
-et de départ, la capacité, le prix maximal par nuit et la catégorie. Les dates
-doivent être toutes deux renseignées ou toutes deux vides.
+Tous les tests doivent passer. Ils appellent les vraies routes avec la base
+de `DATABASE_URL` et suppriment les comptes et réservations qu'ils créent.
+La recette (TA-001 à TA-010) est décrite dans [docs/recette.md](docs/recette.md).
 
-## 10. Essayer une route protégée
+**Frontend**, depuis `front` :
 
-Comptes de démonstration (tous dans `api/finder-data/comptes.json`) :
+```powershell
+npm run lint     # aucune erreur attendue
+npm run build    # produit front/dist
+```
+
+---
+
+## 7. Utiliser l'application
+
+### 7.1 Comptes de démonstration
+
+Créés par le seed (liste complète dans `api/finder-data/comptes.json`) :
 
 | Rôle | E-mail | Mot de passe |
 | --- | --- | --- |
 | Hôtelier (Amor) | `ravel@amor.example` | `Amor-2026!` |
+| Hôtelier (Byzance) | `bianchi@byzance.example` | `Byzance-2026!` |
+| Hôtelier (Caraïbes) | `toussaint@caraibes.example` | `Caraibes-2026!` |
 | Voyageur | `a.morel@mail.example` | `Voyage-2026!` |
 | Admin | `admin@sentinox.example` | `Admin-2026!` |
 
-Dans Swagger (<http://localhost:3000/docs>) :
+Les autres voyageurs (`k.diallo`, `s.nguyen`, `p.lefebvre`, `m.haddad`
+`@mail.example`) ont aussi le mot de passe `Voyage-2026!`.
 
-1. Ouvre `POST /auth/login` et clique sur **Try it out**.
-2. Saisis `email` et `motDePasse` d'un compte ci-dessus, puis **Execute**.
-3. Copie le champ `token` de la réponse et clique sur **Authorize**.
+### 7.2 Recherche dans le frontend
+
+Avec l'API et le frontend démarrés, ce parcours vérifie que tout fonctionne :
+
+1. À l'ouverture, les **32 chambres** s'affichent.
+2. **Hôtel** = `Amor`, puis **Rechercher** : la fiche Amor apparaît avec ses
+   12 chambres.
+3. Clique sur une chambre : sa fiche affiche numéro, catégorie, capacité,
+   prix, description et hôtel. **Fermer** la masque.
+4. **Personnes** = 4 et **Prix max.** = 120 : seules les chambres
+   correspondantes restent.
+5. Un hôtel inconnu ou un filtre sans résultat affiche un message, sans page
+   blanche.
+6. Une seule date, ou des dates dans le mauvais ordre : le formulaire affiche
+   une erreur et n'envoie pas de requête.
+7. Arrête l'API (Ctrl+C) et relance une recherche : un message indique que
+   l'API ne répond pas. Redémarre-la ensuite.
+
+Les dates d'arrivée et de départ doivent être toutes deux renseignées ou
+toutes deux vides.
+
+### 7.3 Routes protégées avec Swagger
+
+1. Ouvre <http://localhost:3000/docs>, puis `POST /auth/login` →
+   **Try it out**.
+2. Saisis `email` et `motDePasse` d'un compte de démonstration → **Execute**.
+3. Copie le champ `token` de la réponse, clique sur **Authorize**.
 4. Colle le token **sans** ajouter `Bearer` (Swagger l'ajoute lui-même).
 
-## Commandes utiles
+Les routes protégées sont alors utilisables selon le rôle du compte.
+
+---
+
+## 8. Référence de l'API
+
+Adresse de base : `http://localhost:3000`. Le détail de chaque route (corps,
+réponses) est dans Swagger : <http://localhost:3000/docs>.
+
+| Méthode | Route | Accès | Description |
+| --- | --- | --- | --- |
+| GET | `/health` | public | État de l'API |
+| GET | `/hotels` | public | Liste des hôtels |
+| GET | `/hotels/:id` | public | Fiche d'un hôtel |
+| GET | `/hotels/:id/chambres` | public | Chambres d'un hôtel |
+| GET | `/chambres` | public | Recherche de chambres (filtres ci-dessous) |
+| GET | `/chambres/:id` | public | Fiche d'une chambre |
+| POST | `/chambres` | hôtelier | Ajouter une chambre |
+| PATCH | `/chambres/:id` | hôtelier | Modifier une chambre |
+| DELETE | `/chambres/:id` | hôtelier | Supprimer une chambre |
+| POST | `/auth/register` | public | Créer un compte |
+| POST | `/auth/login` | public | Se connecter (renvoie `token`) |
+| GET | `/me` | connecté | Compte connecté |
+| GET | `/voyageurs/me` | voyageur | Profil voyageur |
+| PATCH | `/voyageurs/me` | voyageur | Modifier son profil |
+| POST | `/reservations` | voyageur | Réserver une chambre |
+| GET | `/reservations/mine` | voyageur | Mes réservations |
+| DELETE | `/reservations/:id` | voyageur | Annuler une réservation |
+| GET | `/reservations/received` | hôtelier | Réservations reçues |
+| PATCH | `/reservations/:id` | hôtelier | Changer le statut d'une réservation |
+| GET | `/admin/secret` | admin | Route de test du rôle admin |
+
+**Filtres de `GET /chambres`** (tous facultatifs, combinables) :
+
+| Paramètre | Exemple | Effet |
+| --- | --- | --- |
+| `hotel` | `hotel=Amor` ou `hotel=1` | Nom (partiel) ou identifiant de l'hôtel |
+| `prix_max` | `prix_max=89` | Prix par nuit inférieur ou égal |
+| `capacite` | `capacite=4` | Nombre de personnes exact |
+| `categorie` | `categorie=suite` | `simple`, `double`, `familiale` ou `suite` |
+| `date_debut` et `date_fin` | `date_debut=2026-12-01&date_fin=2026-12-05` | Chambres libres sur la période |
+
+Exemple : <http://localhost:3000/chambres?hotel=Amor&prix_max=120>
+
+**Conventions :**
+
+- routes protégées : en-tête `Authorization: Bearer <token>` ;
+- sans jeton : `401` ; mauvais rôle : `403` ; corps invalide : `400` ;
+  identifiant inconnu : `404` ;
+- toute erreur renvoie un JSON de la forme `{ "erreur": "..." }` ;
+- statuts de réservation : `en_attente`, `confirmee`, `refusee`, `annulee`.
+
+## 9. Base de données
+
+Schéma : [api/prisma/schema.prisma](api/prisma/schema.prisma).
+
+| Table | Contenu | Liens |
+| --- | --- | --- |
+| `hotel` | Les 3 hôtels | — |
+| `chambre` | Les 32 chambres (numéro unique dans un hôtel) | → `hotel` |
+| `compte` | Voyageurs, hôteliers, admin (mots de passe hachés avec bcrypt) | → `hotel` pour un hôtelier |
+| `reservation` | Réservations avec dates et statut | → `chambre`, → `compte` |
+
+Les données de départ viennent de `api/finder-data/` (à ne pas modifier) et
+sont chargées par [api/prisma/seed.js](api/prisma/seed.js).
+
+Pour explorer la base : HeidiSQL (Laragon) ou `npx prisma studio` depuis `api`.
+
+## 10. Structure du projet
+
+```text
+projet-finder/
+├── api/                    API Express
+│   ├── src/
+│   │   ├── server.js       démarrage du serveur
+│   │   ├── app.js          configuration Express, CORS, Swagger
+│   │   ├── routes/         une route par fichier (hotels, chambres, auth…)
+│   │   ├── middlewares.js  authentification JWT, rôles, validation
+│   │   ├── schemas.js      schémas Zod
+│   │   └── prisma.js       client Prisma partagé
+│   ├── prisma/             schéma, migrations, seed
+│   ├── finder-data/        données de démonstration (JSON)
+│   ├── tests/              tests Vitest/Supertest
+│   └── .env.example        modèle de configuration
+├── front/                  interface React/Vite
+│   └── src/
+│       ├── App.jsx         page principale et appels à l'API
+│       ├── composants/     formulaire, listes et fiches
+│       └── config.js       adresse de l'API
+└── docs/                   spécification, architecture, recette, décisions
+```
+
+## 11. Commandes utiles
 
 | Dossier | Commande | Utilité |
 | --- | --- | --- |
 | `api` | `npm run dev` | Démarrer l'API avec rechargement automatique |
 | `api` | `npm start` | Démarrer l'API sans rechargement |
-| `api` | `npm test` | Lancer les tests de l'API |
-| `api` | `npm run test:coverage` | Tests avec couverture de code |
-| `api` | `npm run check` | Vérifier la syntaxe JavaScript |
-| `api` | `npm run db:seed` | Recharger les données (remplace les données Finder) |
+| `api` | `npm test` | Lancer les tests |
+| `api` | `npm run test:coverage` | Tests avec couverture |
+| `api` | `npm run check` | Vérifier la syntaxe |
+| `api` | `npm run db:seed` | Remettre les données de départ |
 | `api` | `npx prisma migrate deploy` | Appliquer les migrations |
+| `api` | `npx prisma studio` | Explorer la base dans le navigateur |
 | `front` | `npm run dev` | Démarrer l'interface |
-| `front` | `npm run lint` | Vérifier le code frontend |
-| `front` | `npm run build` | Construire le frontend dans `front/dist` |
+| `front` | `npm run lint` | Vérifier le code |
+| `front` | `npm run build` | Construire dans `front/dist` |
 | `front` | `npm run preview` | Prévisualiser le build |
 
-## Résoudre les problèmes courants
+## 12. Problèmes courants
 
-### `npm` ou `node` n'est pas reconnu
+| Symptôme | Cause et solution |
+| --- | --- |
+| `npm` ou `node` n'est pas reconnu | Node.js absent, ou terminal ouvert avant l'installation. Ferme tous les terminaux (et VS Code) puis rouvre-les. |
+| *L'exécution de scripts est désactivée* | Voir [4.1 Prérequis](#41-prérequis) : `Set-ExecutionPolicy`, ou `npm.cmd` / `npx.cmd`. |
+| `EBADENGINE`, Vitest ou Vite refuse de démarrer | Mauvaise version de Node. Installe Node 24 LTS, supprime `node_modules` dans `api` et `front`, relance `npm ci`. |
+| `Can't reach database server at 127.0.0.1:3306` | MySQL n'est pas démarré : lance-le dans Laragon. Typique : `/health` répond mais `/hotels` renvoie une erreur 500. |
+| `Access denied for user` ou `Unknown database` | `DATABASE_URL` est faux : vérifie utilisateur, mot de passe (encodé), port et que `finder_local` existe. |
+| Prisma signale des tables absentes | Depuis `api` : `npx prisma migrate deploy` puis `npm run db:seed`. |
+| `@prisma/client did not initialize yet` | Lance `npx prisma generate` depuis `api`. |
+| Tests : *La base DATABASE_URL ne contient pas les données de démonstration* | Lance `npm run db:seed` depuis `api`, puis `npm test`. |
+| Frontend : *Impossible de joindre l'API* | L'API doit tourner (terminal 1) et `FRONTEND_ORIGIN` doit être exactement l'adresse de Vite. Redémarre l'API après toute modification de `.env`. |
+| `EADDRINUSE` (port déjà utilisé) | `Get-NetTCPConnection -LocalPort 3000 -State Listen` donne le `OwningProcess`, puis `Stop-Process -Id <numéro>`. |
+| Vite démarre sur un autre port que 5173 | Mets cette adresse dans `FRONTEND_ORIGIN` et redémarre l'API. |
 
-Node.js n'est pas installé, ou le terminal a été ouvert avant l'installation.
-Ferme **tous** les terminaux (et VS Code), rouvre-les et relance
-`node --version`.
+## 13. Documentation complémentaire
 
-### PowerShell bloque `npm.ps1` ou `npx.ps1`
-
-Voir [Autoriser npm dans PowerShell](#autoriser-npm-dans-powershell), ou
-utilise `npm.cmd` / `npx.cmd`.
-
-### `EBADENGINE` ou Vitest/Vite refuse de démarrer
-
-La version de Node ne convient pas. Installe Node 24 LTS (ou 22.12+), évite
-les versions impaires (23, 25), puis supprime `node_modules` dans `api` et
-`front` et relance `npm ci`.
-
-### `Can't reach database server at 127.0.0.1:3306`
-
-MySQL n'est pas démarré, ou n'écoute pas sur ce port. Démarre-le dans Laragon.
-Symptôme typique : `/health` répond `{"statut":"ok"}` mais `/hotels` renvoie
-une erreur 500, car `/health` n'utilise pas la base.
-
-### `Access denied for user` ou `Unknown database`
-
-`DATABASE_URL` ne correspond pas à ton MySQL : vérifie l'utilisateur, le mot
-de passe (encodé), le port et que la base `finder_local` existe (section 4).
-
-### Prisma indique que des tables sont absentes
-
-Depuis `api`, relance `npx prisma generate` puis `npx prisma migrate deploy`,
-puis `npm run db:seed`.
-
-### `@prisma/client did not initialize yet`
-
-Le client Prisma n'a pas été généré : lance `npx prisma generate` depuis `api`.
-
-### Les tests échouent avec « La base DATABASE_URL ne contient pas les données de démonstration »
-
-Le seed n'a pas été chargé dans cette base : lance `npm run db:seed` depuis
-`api`, puis `npm test`.
-
-### Le frontend affiche « Impossible de joindre l'API »
-
-- l'API doit tourner sur <http://localhost:3000> (terminal 1) ;
-- `FRONTEND_ORIGIN` dans `api/.env` doit être **exactement** l'adresse
-  affichée par Vite (protocole, nom d'hôte et port) ;
-- après toute modification de `.env`, redémarre l'API.
-
-### Un port est déjà utilisé (`EADDRINUSE`)
-
-Trouve le programme qui occupe le port, puis ferme-le :
-
-```powershell
-Get-NetTCPConnection -LocalPort 3000 -State Listen | Select-Object OwningProcess
-Stop-Process -Id <numéro affiché>
-```
-
-Si Vite choisit un autre port que `5173`, mets cette adresse dans
-`FRONTEND_ORIGIN` et redémarre l'API. Si tu changes le port de l'API, mets
-aussi à jour `front/src/config.js`.
-
-## Structure du projet
-
-- `api/src/` — serveur Express, routes, middlewares et documentation OpenAPI ;
-- `api/prisma/` — schéma, migrations et seed ;
-- `api/finder-data/` — données de démonstration (ne pas modifier) ;
-- `api/tests/` — tests de l'API (Vitest et Supertest) ;
-- `front/src/` — interface React et ses composants ;
-- `docs/` — spécification, architecture, recette et décisions.
+- [docs/SPEC.md](docs/SPEC.md) : spécification et avancement des sprints ;
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) : architecture de l'API ;
+- [docs/recette.md](docs/recette.md) : tests d'acceptation TA-001 à TA-010 ;
+- [docs/decisions/](docs/decisions/) : décisions techniques (ex. frontend
+  séparé de l'API) ;
+- [api/finder-data/README.md](api/finder-data/README.md) : description des
+  données de démonstration.
