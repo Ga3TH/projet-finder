@@ -1,0 +1,10 @@
+@import "tailwindcss";
+
+/* Thème sombre : calendriers, listes déroulantes et barres de défilement natives en sombre */
+:root {
+  color-scheme: dark;
+}
+
+body {
+  @apply bg-slate-950 text-slate-100 antialiased;
+}

@@ -136,23 +136,23 @@ function App() {
   )
 
   return (
-    <main>
-      <h1>Rechercher une chambre</h1>
+    <main className="mx-auto max-w-4xl space-y-6 px-4 py-10">
+      <h1 className="text-3xl font-bold tracking-tight">Rechercher une chambre</h1>
       <FormulaireRecherche
         criteres={criteres}
         onChanger={setCriteres}
         onRechercher={rechercherAvecCriteres}
       />
-      {erreurFormulaire && <p role="alert">{erreurFormulaire}</p>}
-      {chargement && <p role="status">Chargement des chambres…</p>}
-      {!chargement && erreur && <p role="alert">{erreur}</p>}
+      {erreurFormulaire && <p role="alert" className="rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-red-300">{erreurFormulaire}</p>}
+      {chargement && <p role="status" className="text-slate-400">Chargement des chambres…</p>}
+      {!chargement && erreur && <p role="alert" className="rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-red-300">{erreur}</p>}
       {!chargement &&
         !erreur &&
         criteresValides.hotel.trim() !== '' &&
         (hotelCible ? (
           <FicheHotel hotel={hotelCible} />
         ) : (
-          <p role="status">
+          <p role="status" className="text-slate-400">
             Aucun hôtel ne correspond à « {criteresValides.hotel} ».
           </p>
         ))}
