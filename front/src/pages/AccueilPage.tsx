@@ -1,11 +1,18 @@
 import { useEffect, useState } from 'react'
-import { API } from '../config.js'
-import FicheChambre from '../composants/FicheChambre.jsx'
-import FicheHotel from '../composants/FicheHotel.jsx'
-import FormulaireRecherche from '../composants/FormulaireRecherche.jsx'
-import ListeChambres from '../composants/ListeChambres.jsx'
+import type { FormEvent } from 'react'
+import { API } from '../config'
+import FicheChambre from '../composants/FicheChambre'
+import FicheHotel from '../composants/FicheHotel'
+import FormulaireRecherche from '../composants/FormulaireRecherche'
+import ListeChambres from '../composants/ListeChambres'
+import {
+  messageErreurApi,
+  type Chambre,
+  type CriteresRecherche,
+  type Hotel,
+} from '../types'
 
-const criteresInitiaux = {
+const criteresInitiaux: CriteresRecherche = {
   hotel: '',
   date_debut: '',
   date_fin: '',
@@ -14,16 +21,23 @@ const criteresInitiaux = {
   categorie: '',
 }
 
-function AccueilPage() {
-  const [criteres, setCriteres] = useState(criteresInitiaux)
-  const [criteresValides, setCriteresValides] = useState(criteresInitiaux)
+interface AccueilPageProps {
+  jeton: string | null
+  onJetonInvalide: (jeton: string | null) => void
+}
+
+function AccueilPage({ jeton, onJetonInvalide }: AccueilPageProps) {
+  const [criteres, setCriteres] = useState<CriteresRecherche>(criteresInitiaux)
+  const [criteresValides, setCriteresValides] =
+    useState<CriteresRecherche>(criteresInitiaux)
   const [versionRecherche, setVersionRecherche] = useState(0)
-  const [chambres, setChambres] = useState([])
-  const [hotelCible, setHotelCible] = useState(null)
-  const [chambreSelectionneeId, setChambreSelectionneeId] = useState(null)
+  const [chambres, setChambres] = useState<Chambre[]>([])
+  const [hotelCible, setHotelCible] = useState<Hotel | null>(null)
+  const [chambreSelectionneeId, setChambreSelectionneeId] =
+    useState<number | null>(null)
   const [chargement, setChargement] = useState(true)
-  const [erreur, setErreur] = useState(null)
-  const [erreurFormulaire, setErreurFormulaire] = useState(null)
+  const [erreur, setErreur] = useState<string | null>(null)
+  const [erreurFormulaire, setErreurFormulaire] = useState<string | null>(null)
 
   useEffect(() => {
     const controller = new AbortController()
@@ -48,24 +62,26 @@ function AccueilPage() {
           signal: controller.signal,
         })
         if (!reponseChambres.ok) {
-          let corps
+          let corps: unknown
           try {
             corps = await reponseChambres.json()
           } catch {
             corps = null
           }
           throw new Error(
-            corps?.erreur ??
+            messageErreurApi(
+              corps,
               `La recherche a échoué (HTTP ${reponseChambres.status}).`,
+            ),
           )
         }
 
-        const resultats = await reponseChambres.json()
+        const resultats: unknown = await reponseChambres.json()
         if (!Array.isArray(resultats)) {
           throw new Error("La réponse de l'API n'est pas une liste de chambres.")
         }
 
-        let hotelTrouve = null
+        let hotelTrouve: Hotel | null = null
         const rechercheHotel = criteresValides.hotel.trim()
         if (rechercheHotel !== '') {
           const reponseHotels = await fetch(`${API}/hotels`, {
@@ -76,21 +92,22 @@ function AccueilPage() {
               `Impossible de charger les hôtels (HTTP ${reponseHotels.status}).`,
             )
           }
-          const hotels = await reponseHotels.json()
+          const hotels: unknown = await reponseHotels.json()
           if (!Array.isArray(hotels)) {
             throw new Error("La réponse de l'API n'est pas une liste d'hôtels.")
           }
+          const listeHotels = hotels as Hotel[]
           const rechercheNormalisee = rechercheHotel.toLocaleLowerCase()
           hotelTrouve =
-            hotels.find((hotel) => String(hotel.id) === rechercheHotel) ??
-            hotels.find((hotel) =>
+            listeHotels.find((hotel) => String(hotel.id) === rechercheHotel) ??
+            listeHotels.find((hotel) =>
               hotel.nom.toLocaleLowerCase().includes(rechercheNormalisee),
             ) ??
             null
         }
 
         if (!controller.signal.aborted) {
-          setChambres(resultats)
+          setChambres(resultats as Chambre[])
           setHotelCible(hotelTrouve)
         }
       } catch (cause) {
@@ -114,7 +131,7 @@ function AccueilPage() {
     return () => controller.abort()
   }, [criteresValides, versionRecherche])
 
-  function rechercherAvecCriteres(event) {
+  function rechercherAvecCriteres(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setErreurFormulaire(null)
 
@@ -185,6 +202,10 @@ function AccueilPage() {
             <FicheChambre
               chambre={chambreSelectionnee}
               hotel={chambreSelectionnee.hotel}
+              jeton={jeton}
+              onJetonInvalide={onJetonInvalide}
+              dateDebutInitiale={criteresValides.date_debut}
+              dateFinInitiale={criteresValides.date_fin}
               onFermer={() => setChambreSelectionneeId(null)}
             />
           )}

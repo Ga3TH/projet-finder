@@ -31,3 +31,17 @@ MySQL comme décrit dans [INSTALLATION.txt](../INSTALLATION.txt), puis exécuter
 `npx prisma migrate deploy` et `npm run db:seed` depuis `api`. Le seed remplace
 les données de la base Finder configurée : ne pas l'exécuter sur une base à
 conserver.
+
+## Recette frontend — réservations
+
+La page « Mes réservations » est rafraîchie à l'ouverture, après une annulation
+et toutes les cinq secondes tant qu'elle reste ouverte. Cette stratégie est
+détaillée dans la [décision 0002](decisions/0002-raffraichissement-par-le-client.md).
+
+| Action                                                                                                      | Résultat attendu                                                                                                                  |
+| ----------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| Connecté comme voyageur, sélectionner une chambre, saisir des dates valides et réserver.                    | Un seul `POST /reservations` part ; le bouton est désactivé pendant l'envoi ; la réservation apparaît dans « Mes réservations ». |
+| Envoyer une réservation refusée par l'API (par exemple des dates invalides).                                | Un message d'erreur apparaît ; le formulaire reste affiché et aucune réservation fantôme n'est ajoutée.                           |
+| Annuler une réservation en attente ou confirmée.                                                            | Le `DELETE /reservations/:id` réussit ; la liste est relue ; le statut devient « Annulée » et le bouton disparaît.                 |
+| Tenter d'annuler une réservation déjà refusée ou annulée, ou faire refuser la requête par l'API.             | Aucun bouton d'annulation n'est proposé pour ces statuts ; en cas d'erreur API, la ligne reste inchangée et l'erreur est affichée. |
+| Laisser « Mes réservations » ouverte et modifier le statut depuis un compte hôtelier.                         | Le statut accepté/refusé apparaît au prochain rafraîchissement automatique, sans rechargement de la page.                          |

@@ -1,3 +1,5 @@
+import { useState } from 'react'
+import type { ReactNode } from 'react'
 import {
   BrowserRouter,
   NavLink,
@@ -6,17 +8,18 @@ import {
   Routes,
   useNavigate,
 } from 'react-router-dom'
-import AccueilPage from './pages/AccueilPage.jsx'
-import ConnexionPage from './pages/ConnexionPage.jsx'
-import MesReservationsPage from './pages/MesReservationsPage.jsx'
-import PageIntrouvable from './pages/PageIntrouvable.jsx'
+import AccueilPage from './pages/AccueilPage'
+import ConnexionPage from './pages/ConnexionPage'
+import MesReservationsPage from './pages/MesReservationsPage'
+import PageIntrouvable from './pages/PageIntrouvable'
 
-function estConnecte() {
-  return Boolean(localStorage.getItem('token'))
+interface RouteProtegeeProps {
+  jeton: string | null
+  children: ReactNode
 }
 
-function RouteProtegee({ children }) {
-  if (!estConnecte()) {
+function RouteProtegee({ jeton, children }: RouteProtegeeProps) {
+  if (!jeton) {
     return <Navigate to="/connexion" replace />
   }
 
@@ -25,10 +28,11 @@ function RouteProtegee({ children }) {
 
 function App() {
   const navigate = useNavigate()
+  const [jeton, setJeton] = useState<string | null>(null)
 
   function deconnecter() {
-    localStorage.removeItem('token')
-    navigate('/connexion', { replace: true })
+    setJeton(null)
+    navigate('/', { replace: true })
   }
 
   return (
@@ -44,7 +48,7 @@ function App() {
             </NavLink>
           </div>
 
-          {estConnecte() ? (
+          {jeton ? (
             <button
               type="button"
               onClick={deconnecter}
@@ -64,13 +68,26 @@ function App() {
       </header>
 
       <Routes>
-        <Route path="/" element={<AccueilPage />} />
-        <Route path="/connexion" element={<ConnexionPage />} />
+        <Route
+          path="/"
+          element={
+            <AccueilPage jeton={jeton} onJetonInvalide={setJeton} />
+          }
+        />
+        <Route
+          path="/connexion"
+          element={
+            <ConnexionPage jeton={jeton} onConnexion={setJeton} />
+          }
+        />
         <Route
           path="/mes-reservations"
           element={
-            <RouteProtegee>
-              <MesReservationsPage />
+            <RouteProtegee jeton={jeton}>
+              <MesReservationsPage
+                jeton={jeton}
+                onJetonInvalide={setJeton}
+              />
             </RouteProtegee>
           }
         />

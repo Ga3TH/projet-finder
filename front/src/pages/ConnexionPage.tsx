@@ -1,20 +1,29 @@
 import { useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
-import { API } from '../config.js'
+import type { FormEvent } from 'react'
+import { API } from '../config'
+import {
+  estReponseConnexion,
+  messageErreurApi,
+} from '../types'
 
-function ConnexionPage() {
+interface ConnexionPageProps {
+  jeton: string | null
+  onConnexion: (jeton: string) => void
+}
+
+function ConnexionPage({ jeton, onConnexion }: ConnexionPageProps) {
   const navigate = useNavigate()
   const [email, setEmail] = useState('a.morel@mail.example')
   const [motDePasse, setMotDePasse] = useState('Voyage-2026!')
   const [erreur, setErreur] = useState('')
   const [chargement, setChargement] = useState(false)
 
-  const estConnecte = Boolean(localStorage.getItem('token'))
-  if (estConnecte) {
+  if (jeton) {
     return <Navigate to="/mes-reservations" replace />
   }
 
-  async function handleSubmit(event) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setErreur('')
 
@@ -37,13 +46,17 @@ function ConnexionPage() {
         }),
       })
 
-      const donnees = await reponse.json().catch(() => ({}))
+      const donnees: unknown = await reponse.json().catch(() => null)
 
       if (!reponse.ok) {
-        throw new Error(donnees.erreur || 'Identifiants invalides.')
+        throw new Error(messageErreurApi(donnees, 'Identifiants invalides.'))
       }
 
-      localStorage.setItem('token', donnees.token)
+      if (!estReponseConnexion(donnees)) {
+        throw new Error("La réponse de l'API ne contient pas de jeton.")
+      }
+
+      onConnexion(donnees.token)
       navigate('/mes-reservations', { replace: true })
     } catch (erreurRecue) {
       setErreur(

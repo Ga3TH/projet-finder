@@ -44,6 +44,12 @@ describe("Reservations", () => {
           (reservation) => reservation.id === reservationId,
         ),
       ).toBe(true);
+      const reservationTrouvee = reservations.body.find(
+        (reservation) => reservation.id === reservationId,
+      );
+      expect(reservationTrouvee.chambre.id).toBe(1);
+      expect(reservationTrouvee.chambre.numero).toBeGreaterThan(0);
+      expect(reservationTrouvee.chambre.hotel.nom.length).toBeGreaterThan(0);
     } finally {
       if (reservationId !== undefined) {
         await prisma.reservations.deleteMany({

@@ -36,6 +36,11 @@ const router = Router();
 router.get("/reservations/mine", authentifier, exigeRole("voyageur"), async (req, res) => {
   const reservations = await prisma.reservations.findMany({
     where: { compteId: Number(req.user.id) },
+    include: {
+      chambre: {
+        include: { hotel: true },
+      },
+    },
   });
 
   return res.json(reservations);

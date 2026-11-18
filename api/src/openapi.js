@@ -102,6 +102,16 @@
  *         statut:
  *           type: string
  *           enum: [en_attente, confirmee, refusee, annulee]
+ *         chambre:
+ *           type: object
+ *           properties:
+ *             numero:
+ *               type: integer
+ *             hotel:
+ *               type: object
+ *               properties:
+ *                 nom:
+ *                   type: string
  *     Inscription:
  *       type: object
  *       additionalProperties: false

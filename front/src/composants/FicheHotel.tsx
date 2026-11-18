@@ -1,4 +1,12 @@
-function FicheHotel({ hotel, children }) {
+import type { ReactNode } from 'react'
+import type { Hotel } from '../types'
+
+interface FicheHotelProps {
+  hotel: Hotel
+  children?: ReactNode
+}
+
+function FicheHotel({ hotel, children }: FicheHotelProps) {
   return (
     <section className="space-y-1 rounded-xl border border-slate-800 bg-slate-900 p-5">
       <h2 className="text-xl font-semibold">{hotel.nom}</h2>

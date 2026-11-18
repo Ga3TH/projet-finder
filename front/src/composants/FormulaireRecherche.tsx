@@ -1,11 +1,24 @@
+import type { ChangeEvent, FormEventHandler } from 'react'
+import type { CriteresRecherche } from '../types'
+
 const categories = ['simple', 'double', 'familiale', 'suite']
 
 const classeLabel = 'flex flex-col gap-1 text-sm font-medium text-slate-400'
 const classeChamp =
   'rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-slate-100 placeholder:text-slate-500 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/30'
 
-function FormulaireRecherche({ criteres, onChanger, onRechercher }) {
-  function changer(event) {
+interface FormulaireRechercheProps {
+  criteres: CriteresRecherche
+  onChanger: (criteres: CriteresRecherche) => void
+  onRechercher: FormEventHandler<HTMLFormElement>
+}
+
+function FormulaireRecherche({
+  criteres,
+  onChanger,
+  onRechercher,
+}: FormulaireRechercheProps) {
+  function changer(event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
     const { name, value } = event.target
     onChanger({ ...criteres, [name]: value })
   }

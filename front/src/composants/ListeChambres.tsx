@@ -1,4 +1,16 @@
-function ListeChambres({ chambres, chambreSelectionneeId, onSelectionner }) {
+import type { Chambre } from '../types'
+
+interface ListeChambresProps {
+  chambres: Chambre[]
+  chambreSelectionneeId: number | null
+  onSelectionner: (id: number) => void
+}
+
+function ListeChambres({
+  chambres,
+  chambreSelectionneeId,
+  onSelectionner,
+}: ListeChambresProps) {
   if (chambres.length === 0) {
     return <p className="text-slate-400">Aucune chambre à afficher.</p>
   }
