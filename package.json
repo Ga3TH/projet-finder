@@ -4,8 +4,11 @@
     "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
+    "@types/react": "^19.3.2",
+    "@types/react-dom": "^19.3.0",
     "@vitest/coverage-v8": "^5.0.3",
     "supertest": "^7.3.1",
+    "typescript": "^7.0.2",
     "vitest": "^5.0.3"
   }
 }
